@@ -1,8 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "~boxicons/css/boxicons.min.css";
 
-:root {
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -24,4 +25,14 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+} */
+
+.no-scroll{
+  overflow: -moz-scrollbars-none;
+  -ms-overflow-style: none;
+}
+
+.no-scroll::-webkit-scrollbar { 
+  width: 0 !important;
+  display: none; 
 }
