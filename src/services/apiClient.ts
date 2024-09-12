@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 
 const apiClient: AxiosInstance = axios.create({
-    baseURL: 'http://192.168.100.37:2717/',
+    baseURL: 'https://api-annual.uef.edu.vn/',
     // baseURL: 'http://192.168.98.60:8081/',
     timeout: 10000,
     headers: {
