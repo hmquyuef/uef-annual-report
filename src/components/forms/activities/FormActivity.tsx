@@ -2,12 +2,7 @@
 
 import Icon from "@/components/Icon";
 import { AddUpdateActivityItem } from "@/services/forms/formService";
-import {
-  AddUpdateUsersTable,
-  columns,
-  getUsers,
-  Users,
-} from "@/services/users/userService";
+import { columns, getUsers, Users } from "@/services/users/userService";
 import {
   getWorkloadTypes,
   WorkloadTypeItem,
@@ -41,11 +36,11 @@ import {
   useState,
 } from "react";
 
+import { postFiles } from "@/services/uploads/uploadService";
 import { convertTimestampToYYYYMMDD } from "@/ultils/Utility";
 import { DateValue, parseDate } from "@internationalized/date";
-import { postFiles } from "@/services/uploads/uploadService";
-import { useDropzone } from "react-dropzone";
 import Image from "next/image";
+import { useDropzone } from "react-dropzone";
 
 interface FormActivityProps {
   onSubmit: (formData: Partial<AddUpdateActivityItem>) => void;
@@ -76,7 +71,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     new Set<string>()
   );
   const INITIAL_VISIBLE_COLUMNS = ["name", "standard", "actions"];
-  const [visibleColumns, setVisibleColumns] = useState<Selection>(
+  const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
 
@@ -258,7 +253,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     [onRemoveUsers, standardValues]
   );
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = (acceptedFiles: File[]) => {
     // Xử lý tệp tin hình ảnh khi người dùng thả vào
     const formData = new FormData();
     formData.append("file", acceptedFiles[0]); // Thêm tệp tin vào FormData
@@ -266,7 +261,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     // Gửi yêu cầu tải tệp lên API
     const results = postFiles(formData);
     console.log(results);
-  });
+  };
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   const handleSubmit = async (e: FormEvent) => {

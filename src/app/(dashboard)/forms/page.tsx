@@ -50,10 +50,10 @@ const Forms = () => {
 
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
-  const [visibleColumns, setVisibleColumns] = useState<Selection>(
+  const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
-  const [statusFilter, setStatusFilter] = useState<Selection>("all");
+  // const [statusFilter, setStatusFilter] = useState<Selection>("all");
   const [workloadTypesFilter, setWorkloadTypesFilter] =
     useState<Selection>("all");
   const [workloadTypes, setWorkloadTypes] = useState<WorkloadTypeItem[]>([]);

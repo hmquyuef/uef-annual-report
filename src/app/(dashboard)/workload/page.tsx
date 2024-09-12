@@ -15,7 +15,10 @@ import {
   BreadcrumbItem,
   Breadcrumbs,
   Button,
-  Chip,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Input,
   Pagination,
   Selection,
@@ -43,10 +46,10 @@ const Workload = () => {
   const [faculities, setFaculities] = useState<FaculityItem[]>([]);
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
-  const [visibleColumns, setVisibleColumns] = useState<Selection>(
+  const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
-  const [statusFilter, setStatusFilter] = useState<Selection>("all");
+  // const [statusFilter, setStatusFilter] = useState<Selection>("all");
   const rowsPerPage = 15;
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
@@ -186,7 +189,7 @@ const Workload = () => {
               {faculities.map((faculity) => (
                 <SelectItem key={faculity.id}>{faculity.name}</SelectItem>
               ))}
-            </Select>
+            </Select>*/}
             <Dropdown placement="bottom-end">
               <DropdownTrigger className="hidden sm:flex">
                 <Button
@@ -201,39 +204,15 @@ const Workload = () => {
                 disallowEmptySelection
                 aria-label="Table Columns"
                 closeOnSelect={false}
-                selectedKeys={statusFilter}
+                // selectedKeys={statusFilter}
                 selectionMode="multiple"
-                onSelectionChange={setStatusFilter}
+                // onSelectionChange={setStatusFilter}
               >
                 {faculities.map((faculity) => (
                   <DropdownItem key={faculity.id}>{faculity.name}</DropdownItem>
                 ))}
               </DropdownMenu>
-            </Dropdown> */}
-            {/* <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<Icon name="bx-chevron-down" size="20px" />}
-                  variant="flat"
-                >
-                  Columns
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={visibleColumns}
-                selectionMode="multiple"
-                onSelectionChange={setVisibleColumns}
-              >
-                {columns.map((column) => (
-                  <DropdownItem key={column.uid} className="capitalize">
-                    {capitalize(column.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown> */}
+            </Dropdown>
             <Button
               color="primary"
               endContent={<Icon name="bx-plus" size="20px" />}
