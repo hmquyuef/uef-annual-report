@@ -26,7 +26,7 @@ const menuItems: MenuSection[] = [
       {
         icon: "bx-list-check",
         label: "Công tác",
-        href: "/",
+        href: "/workload",
         visible: ["admin", "teacher", "student", "parent"],
         children: null,
       },

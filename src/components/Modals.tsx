@@ -77,15 +77,17 @@ const Modals: React.FC<ModalProps> = ({
               <Button color="danger" variant="light" onPress={onClose}>
                 {closeLabel || "Close"}
               </Button>
-              <Button
-                color="primary"
-                onPress={async () => {
-                  await onAction();
-                  onClose();
-                }}
-              >
-                {actionLabel || "Action"}
-              </Button>
+              {actionLabel && actionLabel != "" ? (
+                <Button
+                  color="primary"
+                  onPress={async () => {
+                    await onAction();
+                    onClose();
+                  }}
+                >
+                  {actionLabel || "Action"}
+                </Button>
+              ) : null}
             </ModalFooter>
           </>
         )}

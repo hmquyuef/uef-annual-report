@@ -134,7 +134,6 @@ const Workload = () => {
   const getFaculities = async () => {
     const response = await getAllFaculities();
     setFaculities(response.items);
-    console.log(response.items);
   };
 
   const onNextPage = useCallback(() => {
@@ -223,7 +222,7 @@ const Workload = () => {
         </div>
       </div>
     );
-  }, [filterValue, onClear, onSearchChange]);
+  }, [filterValue, onClear, onSearchChange, faculities]);
 
   const bottomContent = useMemo(() => {
     return (
