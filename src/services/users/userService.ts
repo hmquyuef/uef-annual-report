@@ -3,6 +3,7 @@ import apiClient from "../apiClient";
 export const columns = [
     { name: "ID", uid: "id"},
     { name: "Họ và tên", uid: "name" },
+    { name: "Đơn vị", uid: "faculityName" },
     { name: "Số tiết chuẩn", uid: "standard" },
     { name: "Sự kiện", uid: "actions" },
 ];
@@ -20,6 +21,7 @@ export interface Users {
     fullName: string;
     email: string;
     faculityName: string;
+    standardNumber: number;
     creationTime: number;
     isActived: boolean;
 }
@@ -52,6 +54,10 @@ export interface UsersACtivitiesResponse {
     totalCount: number;
 }
 
+export async function getListUsers(): Promise<UsersResponse> {
+    const response = await apiClient.get<UsersResponse>('api/users');
+    return response.data;
+}
 
 export async function getUsers(code: string): Promise<UsersResponse> {
     const response = await apiClient.get<UsersResponse>(`api/users?Filters=${code}`);

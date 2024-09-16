@@ -1,19 +1,21 @@
 "use client";
 
 import Icon from "@/components/Icon";
-import { AddUpdateActivityItem } from "@/services/forms/formService";
+import {
+  ActivityInput,
+  AddUpdateActivityItem,
+} from "@/services/forms/formService";
 import { columns, getUsers, Users } from "@/services/users/userService";
 import {
   getWorkloadTypes,
   WorkloadTypeItem,
 } from "@/services/workloads/typeService";
 import {
-  Avatar,
+  Autocomplete,
+  AutocompleteItem,
   Button,
   DatePicker,
   Input,
-  Listbox,
-  ListboxItem,
   Select,
   Selection,
   SelectItem,
@@ -36,7 +38,7 @@ import {
   useState,
 } from "react";
 
-import { postFiles } from "@/services/uploads/uploadService";
+import { deleteFiles, postFiles } from "@/services/uploads/uploadService";
 import { convertTimestampToYYYYMMDD } from "@/ultils/Utility";
 import { DateValue, parseDate } from "@internationalized/date";
 import Image from "next/image";
@@ -61,40 +63,45 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [attendanceFromDate, setAttdanceFromDate] = useState<number | 0>(0);
   const [attendanceToDate, setAttendanceToDate] = useState<number | 0>(0);
   const [moTa, setMoTa] = useState("");
-  const [username, setUsername] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<Users[]>([]);
-  const [tableUsers, setTableUsers] = useState<Users[]>([]);
-  const [standardValues, setStandardValues] = useState<Record<string, number>>(
-    {}
-  );
-  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(
-    new Set<string>()
-  );
-  const INITIAL_VISIBLE_COLUMNS = ["name", "standard", "actions"];
+  const [tableUsers, setTableUsers] = useState<ActivityInput[]>([]);
+  const [inputSearch, setInputSearch] = useState<string>("");
+  const [selectedKey, setSelectedKey] = useState<Key | null>(null);
+  const [standardValues, setStandardValues] = useState<number | 0>(0);
+  const [isUploaded, setIsUploaded] = useState<boolean>(false);
+  const [pathPicture, setPathPicture] = useState<string>("");
+  const INITIAL_VISIBLE_COLUMNS = [
+    "name",
+    "faculityName",
+    "standard",
+    "actions",
+  ];
   const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
-
   // Get all workload types
   const getAllWorkloadTypes = async () => {
     const response = await getWorkloadTypes();
     setWorkloadTypes(response.items);
   };
+  const getUserByCode = async (code: string) => {
+    try {
+      const response = await getUsers(code);
+      setFilteredUsers(response.items);
+    } catch (error) {
+      setFilteredUsers([]);
+    }
+  };
 
-  const onAddUsers = () => {
-    const selectedUserObjects = Array.from(selectedUsers).map((id) =>
-      filteredUsers.find((user) => user.id === id)
-    );
-    // Thêm người dùng vào tableUsers (nếu chưa có trong danh sách)
-    setTableUsers((prev) => [
-      ...prev,
-      ...(selectedUserObjects.filter(
-        (user) => user && !prev.some((u) => u?.id === user?.id)
-      ) as Users[]),
-    ]);
-    // Clear selections
-    setSelectedUsers(new Set());
-    onClear();
+  const onAddUsers = (key: Key | null, standard: number | 0) => {
+    const itemUser = filteredUsers.find((user) => user.id === key);
+    if (itemUser) {
+      itemUser.standardNumber = standard;
+      setTableUsers((prevTableUsers) => [...prevTableUsers, itemUser]);
+      setStandardValues(0);
+      setSelectedKey(null);
+      setFilteredUsers([]);
+    }
   };
 
   const onRemoveUsers = useCallback((id: string) => {
@@ -140,54 +147,59 @@ const FormActivity: React.FC<FormActivityProps> = ({
     }
   }, []);
 
-  const handleStandardChange = (userId: string, value: number) => {
-    setTableUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId ? { ...user, standardNumber: value } : user
-      )
-    );
-    setStandardValues((prevValues) => ({ ...prevValues, [userId]: value }));
-  };
-
-  const onClear = useCallback(() => {
-    setUsername("");
-    setFilteredUsers([]);
-  }, []);
-
   useEffect(() => {
     getAllWorkloadTypes();
   }, []);
 
-  useEffect(() => {
-    const getAllUsers = async (code: string) => {
-      const response = await getUsers(code);
-      setFilteredUsers(response.items);
-      console.log(tableUsers);
-    };
+  const onSelectionChange = (key: Key | null) => {
+    setSelectedKey(key);
+  };
 
-    if (username.trim()) {
-      const timeoutId = setTimeout(() => {
-        getAllUsers(username);
-      }, 1000);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [username, tableUsers]);
+  const onInputChange = (value: string) => {
+    setInputSearch(value);
+  };
+  // Gọi API mỗi khi query thay đổi
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (inputSearch) {
+        getUserByCode(inputSearch);
+      }
+    }, 1500); // Debounce để tránh call API quá nhiều lần khi gõ liên tục
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [inputSearch]);
 
   // Populate form data in edit mode
   useEffect(() => {
-    if (mode === "edit" && initialData) {
-      console.log("INITIAL DATA", initialData);
-      setName(initialData.name || "");
-      setDeterNumber(initialData.determinations?.number || "");
-      setDeterTime(initialData.determinations?.time || 0);
-      setAttdanceFromDate(
-        initialData.attendance?.fromDate
-          ? new Date(initialData.attendance.fromDate * 1000).getTime() / 1000
-          : 0
-      );
-      setMoTa(initialData.description || "");
-      console.log("INITIAL DATA", initialData.participants);
-    }
+    const loadUsers = async () => {
+      if (mode === "edit" && initialData) {
+        console.log("initialData: ", initialData);
+        setSelectedWorkloadType(initialData.workloadTypeId || "");
+        setName(initialData.name || "");
+        setDeterNumber(initialData.determinations?.number || "");
+        setDeterTime(initialData.determinations?.time || 0);
+        setAttdanceFromDate(
+          initialData.attendance?.fromDate
+            ? new Date(initialData.attendance.fromDate * 1000).getTime() / 1000
+            : 0
+        );
+        setAttendanceToDate(
+          initialData.attendance?.toDate
+            ? new Date(initialData.attendance.toDate * 1000).getTime() / 1000
+            : 0
+        );
+        if (initialData.participants && initialData.participants.length > 0) {
+          setTableUsers(initialData.participants);
+        }
+        if(initialData.determinations?.pathImg !== "" && initialData.determinations?.pathImg !== null){
+          setPathPicture(initialData.determinations?.pathImg || "");
+          setIsUploaded(true);
+        }
+        setMoTa(initialData.description || "");
+      }
+    };
+
+    loadUsers();
   }, [initialData, mode]);
 
   const headerColumns = useMemo(() => {
@@ -202,38 +214,29 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const renderCell = useCallback(
     (user: User, columnKey: Key) => {
       const cellValue = user[columnKey as keyof User];
-
       switch (columnKey) {
         case "name":
           return (
-            <User
-              avatarProps={{ radius: "lg", src: "avatar.jpg" }}
-              description={user.email}
-              name={cellValue}
-            >
-              {user.fullName}
-              {user.email}
-            </User>
+            <>
+              <User
+                name={user.fullName}
+                avatarProps={{
+                  src: "avatar.jpg",
+                }}
+              />
+            </>
+          );
+        case "faculityName":
+          return (
+            <>
+              <p>{user.faculityName}</p>
+            </>
           );
         case "standard":
           return (
-            <div className="max-w-fit">
-              <Input
-                isClearable
-                isRequired
-                key={"sotietchuan" + user.id}
-                type="number"
-                variant="faded"
-                labelPlacement="outside"
-                placeholder=" "
-                value={String(standardValues[user.id] || 0)} // Convert the value to a string
-                onChange={(e) =>
-                  handleStandardChange(user.id, Number(e.target.value))
-                } // Convert the value to a number before passing it as an argument
-                onClear={() => handleStandardChange(user.id, 0)} // Pass the value as a string
-                className="py-2"
-              />
-            </div>
+            <>
+              <p>{user.standardNumber}</p>
+            </>
           );
         case "actions":
           return (
@@ -250,17 +253,21 @@ const FormActivity: React.FC<FormActivityProps> = ({
           return cellValue;
       }
     },
-    [onRemoveUsers, standardValues]
+    [onRemoveUsers]
   );
 
-  const onDrop = (acceptedFiles: File[]) => {
-    // Xử lý tệp tin hình ảnh khi người dùng thả vào
+  const onDrop = async (acceptedFiles: File[]) => {
     const formData = new FormData();
-    formData.append("file", acceptedFiles[0]); // Thêm tệp tin vào FormData
-
-    // Gửi yêu cầu tải tệp lên API
-    const results = postFiles(formData);
+    formData.append("file", acceptedFiles[0]);
+    if(pathPicture !== ""){
+      await deleteFiles(pathPicture.replace('http://192.168.98.60:8081/', ''));
+    }
+    const results = await postFiles(formData);
     console.log(results);
+    if (results) {
+      setIsUploaded(true);
+      setPathPicture("http://192.168.98.60:8081/" + results);
+    }
   };
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
@@ -270,22 +277,28 @@ const FormActivity: React.FC<FormActivityProps> = ({
     const formData: Partial<AddUpdateActivityItem> = {
       name: name,
       workloadTypeId: selectedWorkloadType,
-      determinations: { number: deterNumber, time: deterTime, pathImg: "" },
+      determinations: {
+        number: deterNumber,
+        time: deterTime,
+        pathImg: pathPicture,
+      },
       attendance: { fromDate: attendanceFromDate, toDate: attendanceToDate },
       participants: tableUsers.map((user) => ({
         id: user.id,
-        standardNumber: Number(standardValues[user.id] || 0),
+        fullName: user.fullName,
+        faculityName: user.faculityName,
+        standardNumber: user.standardNumber,
       })),
       description: moTa,
     };
     console.log("FORM DATA", formData);
-    onSubmit(formData);
+    onSubmit(formData, );
   };
 
   return (
     <>
       <form onSubmit={handleSubmit} className="grid grid-row-1 gap-1">
-        <div className="grid grid-cols-2 gap-3 items-center">
+        <div className="grid grid-cols-2 gap-3 items-center mb-3">
           <Select
             isRequired
             items={workloadTypes}
@@ -294,9 +307,6 @@ const FormActivity: React.FC<FormActivityProps> = ({
             labelPlacement="outside"
             defaultSelectedKeys={[initialData?.workloadTypeId || ""]}
             onSelectionChange={handleSelectionChange}
-            classNames={{
-              label: "text-[16px]",
-            }}
           >
             {(type) => (
               <SelectItem key={type.id} textValue={type.name}>
@@ -315,32 +325,25 @@ const FormActivity: React.FC<FormActivityProps> = ({
                 : undefined
             }
             onChange={handleAttendanceDateChange}
-            classNames={{
-              label: "text-[16px]",
-            }}
           />
         </div>
-        <div className="grid grid-cols-2 gap-3 items-center">
+        <div className="grid grid-cols-2 gap-3 items-center mb-3">
           <Input
             isClearable
             isRequired
             key={"soquyetdinh"}
             type="text"
-            label="Số quyết định"
+            label="Tờ trình/Kết hoạch/Quyết định"
             variant="faded"
             labelPlacement="outside"
             placeholder=" "
             value={deterNumber}
             onChange={(e) => setDeterNumber(e.target.value)}
-            onClear={() => {}}
-            className="py-2"
-            classNames={{
-              label: "text-[16px]",
-            }}
+            onClear={() => setDeterNumber("")}
           />
           <DatePicker
             key="ngayquyetdinh"
-            label="Ngày quyết định"
+            label="Ngày hiệu lực"
             variant="faded"
             labelPlacement="outside"
             value={
@@ -349,92 +352,74 @@ const FormActivity: React.FC<FormActivityProps> = ({
                 : undefined
             }
             onChange={handleDateChange}
-            classNames={{
-              label: "text-[16px]",
-            }}
           />
         </div>
-        <Input
-          isClearable
-          isRequired
-          key={"tenhoatdong"}
-          type="text"
-          label="Tên hoạt động"
-          variant="faded"
-          labelPlacement="outside"
-          placeholder=" "
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onClear={() => {}}
-          className="py-2"
-          classNames={{
-            label: "text-[16px]",
-          }}
-        />
-        <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              key={"timkiemnhanvien"}
-              type="text"
+        <div className="mb-3">
+          <Input
+            isClearable
+            isRequired
+            key={"tenhoatdong"}
+            type="text"
+            label="Tên hoạt động"
+            variant="faded"
+            labelPlacement="outside"
+            placeholder=" "
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onClear={() => setName("")}
+          />
+        </div>
+        <div className="flex flex-col gap-3 mb-3">
+          <div className="grid grid-cols-4 gap-3">
+            <Autocomplete
+              defaultItems={filteredUsers}
               label="Tìm kiếm nhân viên"
+              labelPlacement="outside"
               variant="faded"
-              startContent={<Icon name="bx-search-alt-2" size="20px" />}
+              placeholder=" "
+              className="col-span-2"
+              onSelectionChange={onSelectionChange}
+              onInputChange={onInputChange}
+              listboxProps={{
+                emptyContent: "Vui lòng nhập mã nhân viên phù hợp!",
+              }}
+            >
+              {filteredUsers.map((user) => (
+                <AutocompleteItem key={user.id} textValue={user.fullName}>
+                  <div className="flex justify-between items-center">
+                    <User
+                      name={user.fullName}
+                      description={user.userName}
+                      avatarProps={{
+                        src: "avatar.jpg",
+                      }}
+                    />
+                    <p>{user.faculityName}</p>
+                  </div>
+                </AutocompleteItem>
+              ))}
+            </Autocomplete>
+            <Input
+              key={"sotietchuan"}
+              type="number"
+              label="Số tiết chuẩn"
+              variant="faded"
               labelPlacement="outside"
               placeholder=" "
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onClear={() => {}}
-              className="py-2"
-              classNames={{
-                label: "text-[16px]",
-              }}
+              value={standardValues.toString()}
+              onChange={(e) => setStandardValues(Number(e.target.value))}
             />
+            <div className="flex justify-end items-end">
+              <Button
+                color="primary"
+                className="w-full"
+                startContent={<Icon name="bx-plus" size="20px" />}
+                onClick={() => onAddUsers(selectedKey, standardValues)}
+              >
+                Thêm nhân viên
+              </Button>
+            </div>
           </div>
-          {filteredUsers && filteredUsers.length > 0 && (
-            <>
-              <div className="w-full">
-                <Listbox
-                  classNames={{
-                    base: "w-full",
-                    list: "h-fit no-scrollbar",
-                    emptyContent: "text-center",
-                  }}
-                  items={filteredUsers}
-                  variant="faded"
-                  color="primary"
-                  label="Danh sách nhân viên"
-                  selectionMode="multiple"
-                  onSelectionChange={(keys) =>
-                    setSelectedUsers(new Set(Array.from(keys).map(String)))
-                  }
-                >
-                  {(item) => (
-                    <ListboxItem key={item.id} textValue={item.userName}>
-                      <div className="flex gap-2 items-center">
-                        <Avatar
-                          alt={item.fullName}
-                          className="flex-shrink-0"
-                          size="sm"
-                          src="avatar.jpg"
-                        />
-                        <div className="flex flex-col">
-                          <span className="text-small">{item.fullName}</span>
-                          <span className="text-tiny text-default-400">
-                            {item.userName}
-                          </span>
-                        </div>
-                      </div>
-                    </ListboxItem>
-                  )}
-                </Listbox>
-                <div className="w-full flex justify-center">
-                  <Button size="sm" onClick={() => onAddUsers()}>
-                    Thêm nhân viên
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
         </div>
         {tableUsers && tableUsers.length > 0 && (
           <>
@@ -445,7 +430,11 @@ const FormActivity: React.FC<FormActivityProps> = ({
                   {(column) => (
                     <TableColumn
                       key={column.uid}
-                      // align={column.uid === "standard" ? "center" : "start"}
+                      align={
+                        column.uid === "standard" || column.uid == "actions"
+                          ? "center"
+                          : "start"
+                      }
                       className="max-w-14"
                     >
                       {column.name}
@@ -465,28 +454,43 @@ const FormActivity: React.FC<FormActivityProps> = ({
             </div>
           </>
         )}
-        <Textarea
-          key={"ghichu"}
-          label="Ghi chú"
-          variant="faded"
-          value={moTa}
-          labelPlacement="outside"
-          placeholder=" "
-          onChange={(e) => setMoTa(e.target.value)}
-          className="py-2"
-          classNames={{
-            label: "text-[16px]",
-          }}
-        />
+        <div className="mb-3">
+          <Textarea
+            key={"ghichu"}
+            label="Ghi chú"
+            variant="faded"
+            value={moTa}
+            labelPlacement="outside"
+            placeholder=" "
+            onChange={(e) => setMoTa(e.target.value)}
+          />
+        </div>
+        {/* Upload file */}
         <div className="grid grid-rows-1 gap-2">
-          <p>Tải lên minh chứng</p>
+          <p className="text-[14px]">Tải lên minh chứng</p>
           <div
             {...getRootProps()}
-            className="w-full h-20 border-2 border-dashed border-neutral-300 cursor-pointer flex justify-center items-center gap-3 rounded-xl"
+            className="w-full min-h-20 h-fit border-2 border-dashed border-neutral-300 cursor-pointer flex justify-center items-center gap-3 rounded-xl"
           >
             <input {...getInputProps()} />
-            <Image src="upload.svg" width={44} height={44} alt="upload" />
-            <p>Kéo thả file vào đây hoặc nhấp để chọn file</p>
+            {!isUploaded ? (
+              <>
+                <Image src="upload.svg" width={44} height={44} alt="upload" />
+                <p>Kéo thả tệp vào đây hoặc nhấp để chọn tệp</p>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col items-center gap-2 py-3">
+                  <Image
+                    src={pathPicture}
+                    width={120}
+                    height={100}
+                    alt="upload"
+                  />
+                  <p>Kéo thả tệp khác để thay thế</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </form>

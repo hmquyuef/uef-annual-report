@@ -43,6 +43,8 @@ export interface AddUpdateActivityItem {
 
 export interface ActivityInput{
     id: string;
+    fullName: string;
+    faculityName: string;
     standardNumber: number;
 }
 
@@ -75,7 +77,7 @@ export async function postAddActivity(data: Partial<AddUpdateActivityItem>): Pro
 }
 
 export async function putUpdateActivity(id: string, data: Partial<AddUpdateActivityItem>): Promise<AddUpdateActivityItem> {
-    const response = await apiClient.put<AddUpdateActivityItem>(`/api/activities/${id}`, data);
+    const response = await apiClient.put<AddUpdateActivityItem>(`api/activities/${id}`, data);
     return response.data;
 }
 

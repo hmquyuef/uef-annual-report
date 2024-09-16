@@ -37,7 +37,7 @@ export async function postAddWorkloadGroup(data: Partial<AddWordloadGroup>): Pro
 }
 
 export async function putUpdateWorkloadGroup(id: string, data: Partial<AddWordloadGroup>): Promise<AddWordloadGroup> {
-    const response = await apiClient.put<AddWordloadGroup>(`/api/workload/groups/${id}`, data);
+    const response = await apiClient.put<AddWordloadGroup>(`api/workload/groups/${id}`, data);
     return response.data;
 }
 

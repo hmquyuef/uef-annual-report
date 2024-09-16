@@ -4,6 +4,7 @@ import Icon from "@/components/Icon";
 import Modals from "@/components/Modals";
 import FormActivity from "@/components/forms/activities/FormActivity";
 import {
+  ActivityInput,
   ActivityItem,
   AddUpdateActivityItem,
   columns,
@@ -16,15 +17,11 @@ import {
   getWorkloadTypes,
   WorkloadTypeItem,
 } from "@/services/workloads/typeService";
-import { capitalize, convertTimestampToDate } from "@/ultils/Utility";
+import { convertTimestampToDate } from "@/ultils/Utility";
 import {
   BreadcrumbItem,
   Breadcrumbs,
   Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Input,
   Pagination,
   Selection,
@@ -46,16 +43,12 @@ const Forms = () => {
     "description",
   ];
 
-  const rowsPerPage = 15;
-
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
-  // const [statusFilter, setStatusFilter] = useState<Selection>("all");
-  const [workloadTypesFilter, setWorkloadTypesFilter] =
-    useState<Selection>("all");
+  const [workloadTypesFilter] = useState<Selection>("all");
   const [workloadTypes, setWorkloadTypes] = useState<WorkloadTypeItem[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   type Activities = (typeof activities)[0];
@@ -76,9 +69,10 @@ const Forms = () => {
   });
 
   const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<
-    Partial<ActivityItem> | undefined
+    Partial<AddUpdateActivityItem> | undefined
   >(undefined);
   const [mode, setMode] = useState<"add" | "edit">("add");
   const hasSearchFilter = Boolean(filterValue);
@@ -202,7 +196,14 @@ const Forms = () => {
   }, []);
 
   const handleEdit = (activity: ActivityItem) => {
-    setSelectedItem(activity);
+    const updatedActivity: Partial<AddUpdateActivityItem> = {
+      ...activity,
+      participants: activity.participants.map((participant) => ({
+        ...participant,
+        faculityName: participant.faculityName.toString(),
+      })),
+    };
+    setSelectedItem(updatedActivity);
     setMode("edit");
     setIsOpen(true);
   };
@@ -210,13 +211,21 @@ const Forms = () => {
   const handleSubmit = async (formData: Partial<AddUpdateActivityItem>) => {
     try {
       if (mode === "edit" && selectedItem) {
+        const updatedFormData: Partial<AddUpdateActivityItem> = {
+          ...formData,
+          participants: formData.participants as ActivityInput[],
+        };
         const response = await putUpdateActivity(
-          selectedItem.id ?? "",
-          formData
+          "",
+          updatedFormData
         );
         console.log(response);
       } else {
-        await postAddActivity(formData);
+        const newFormData: Partial<AddUpdateActivityItem> = {
+          ...formData,
+          participants: formData.participants as ActivityInput[],
+        };
+        await postAddActivity(newFormData);
       }
       await getListActivities();
       setIsOpen(false);
@@ -240,13 +249,21 @@ const Forms = () => {
     }
   }, [selectedKeys]);
 
+  const onRowsPerPageChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setRowsPerPage(Number(e.target.value));
+      setPage(1);
+    },
+    []
+  );
+
   const topContent = useMemo(() => {
     return (
-      <div className="flex flex-col gap-4 mb-2">
-        <div className="flex justify-between gap-3 items-end">
+      <div className="w-full flex flex-col justify-between items-center gap-3">
+        <div className="w-full flex justify-between items-center gap-3 mb-1">
           <Input
             isClearable
-            className="w-1/3 sm:max-w-[44%]"
+            className="w-1/4"
             placeholder="Tìm kiếm hoạt động..."
             startContent={<Icon name="bx-search-alt-2" />}
             value={filterValue}
@@ -255,7 +272,25 @@ const Forms = () => {
             color="primary"
           />
           <div className="flex gap-3">
-            <Dropdown placement="bottom-start">
+            <Button
+              color="primary"
+              onClick={() => setIsOpen(true)}
+              endContent={<Icon name="bx-plus" />}
+            >
+              Thêm hoạt động
+            </Button>
+            <Button
+              className="hover:text-white"
+              color="danger"
+              variant="ghost"
+              onClick={handleDelete}
+              endContent={<Icon name="bx-trash" size={"20px"} />}
+            >
+              Xóa
+            </Button>
+          </div>
+          {/* <div className="grid grid-cols-2 gap-3"> */}
+          {/* <Dropdown placement="bottom-start">
               <DropdownTrigger className="hidden sm:flex">
                 <Button
                   endContent={<Icon name="bx-chevron-down" />}
@@ -278,31 +313,33 @@ const Forms = () => {
                   </DropdownItem>
                 ))}
               </DropdownMenu>
-            </Dropdown>
-            <Button
-              color="primary"
-              onClick={() => setIsOpen(true)}
-              endContent={<Icon name="bx-plus" />}
+            </Dropdown> */}
+
+          {/* </div> */}
+        </div>
+        <div className="w-full flex flex-row justify-between items-center gap-3 mb-2">
+          <span className="text-default-400 text-small">
+            Total {activities.length} item
+          </span>
+          <label className="flex items-center text-default-400 text-small">
+            Rows per page:
+            <select
+              className="bg-transparent outline-none text-default-400 text-small"
+              onChange={onRowsPerPageChange}
             >
-              Thêm hoạt động
-            </Button>
-            <Button
-              className="hover:text-white"
-              color="danger"
-              variant="ghost"
-              onClick={handleDelete}
-              endContent={<Icon name="bx-trash" size={"20px"} />}
-            >
-              Xóa
-            </Button>
-          </div>
+              <option value="15">15</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
         </div>
       </div>
     );
   }, [
     filterValue,
-    workloadTypes,
-    workloadTypesFilter,
+    activities.length,
+    onRowsPerPageChange,
     handleDelete,
     onClear,
     onSearchChange,
@@ -316,33 +353,37 @@ const Forms = () => {
             ? "All items selected"
             : `${selectedKeys.size} of ${filteredItems.length} selected`}
         </span>
-        <Pagination
-          isCompact
-          showControls
-          showShadow
-          color="primary"
-          page={page}
-          total={pages}
-          onChange={setPage}
-        />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2">
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onPreviousPage}
-          >
-            Trang trước
-          </Button>
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onNextPage}
-          >
-            Trang sau
-          </Button>
-        </div>
+        {page !== 1 && (
+          <>
+            <Pagination
+              isCompact
+              showControls
+              showShadow
+              color="primary"
+              page={page}
+              total={pages}
+              onChange={setPage}
+            />
+            <div className="hidden sm:flex w-[30%] justify-end gap-2">
+              <Button
+                isDisabled={pages === 1}
+                size="sm"
+                variant="flat"
+                onPress={onPreviousPage}
+              >
+                Trang trước
+              </Button>
+              <Button
+                isDisabled={pages === 1}
+                size="sm"
+                variant="flat"
+                onPress={onNextPage}
+              >
+                Trang sau
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     );
   }, [
@@ -356,7 +397,7 @@ const Forms = () => {
 
   useEffect(() => {
     getListActivities();
-  }, []);
+  }, [onRowsPerPageChange]);
 
   useEffect(() => {
     getAllWorkloadTypes();
@@ -385,6 +426,14 @@ const Forms = () => {
             setIsOpen(false);
             setSelectedItem(undefined);
             setMode("add");
+            // const temp =
+            //   selectedItem?.determinations?.pathImg?.replace(
+            //     "http://192.168.98.60:8081/",
+            //     ""
+            //   ) ?? "";
+            // if (temp !== "") {
+            //   await deleteFiles(temp);
+            // }
           }}
           title={mode === "edit" ? "Cập nhật hoạt động" : "Thêm mới hoạt động"}
           size="3xl"
@@ -399,7 +448,7 @@ const Forms = () => {
           bodyContent={
             <FormActivity
               onSubmit={handleSubmit}
-              initialData={selectedItem}
+              initialData={selectedItem as Partial<AddUpdateActivityItem>}
               mode={mode}
             />
           }

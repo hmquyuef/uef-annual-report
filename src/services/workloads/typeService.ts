@@ -33,7 +33,7 @@ export async function getWorkloadTypes(): Promise<WorkloadTypesResponse> {
 }
 
 export async function getWorkloadTypeById(id: string): Promise<WorkloadTypeItem> {
-    const response = await apiClient.get<WorkloadTypeItem>(`/api/workload/types/${id}`);
+    const response = await apiClient.get<WorkloadTypeItem>(`api/workload/types/${id}`);
     return response.data;
 }
 
@@ -43,7 +43,7 @@ export async function postAddWorkloadType(data: Partial<AddUpdateWorkloadType>):
 }
 
 export async function putUpdateWorkloadType(id: string, data: Partial<AddUpdateWorkloadType>): Promise<AddUpdateWorkloadType> {
-    const response = await apiClient.put<AddUpdateWorkloadType>(`/api/workload/types/${id}`, data);
+    const response = await apiClient.put<AddUpdateWorkloadType>(`api/workload/types/${id}`, data);
     return response.data;
 }
 

@@ -45,6 +45,7 @@ interface WorkloadGroupProps {
 const WorkloadType = () => {
   // Remove the type alias and directly use (typeof workloadTypes)[0]
   const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [selectedItem, setSelectedItem] = useState<
     Partial<WorkloadTypeItem> | undefined
   >(undefined);
@@ -66,7 +67,6 @@ const WorkloadType = () => {
   const [workloadGroupItem, setWorkloadGroupItem] = useState<
     WorkloadGroupProps[]
   >([]);
-  const rowsPerPage = 15;
 
   const statusOptions = [
     { name: "Đang kích hoạt", uid: "true", isActived: true },
@@ -264,6 +264,14 @@ const WorkloadType = () => {
     onPreviousPage,
   ]);
 
+  const onRowsPerPageChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setRowsPerPage(Number(e.target.value));
+      setPage(1);
+    },
+    []
+  );
+
   const handleSubmit = async (formData: Partial<AddUpdateWorkloadType>) => {
     try {
       if (mode === "edit" && selectedItem) {
@@ -324,7 +332,7 @@ const WorkloadType = () => {
             Quản lý biểu mẫu
           </BreadcrumbItem>
         </Breadcrumbs>
-        <div className="flex justify-between gap-3 mb-6">
+        <div className="flex justify-between gap-3">
           <Input
             isClearable
             className="w-1/4 sm:max-w-[44%]"
@@ -397,6 +405,23 @@ const WorkloadType = () => {
               Xóa
             </Button>
           </div>
+        </div>
+        <div className="flex justify-between items-center mb-6">
+          <span className="text-default-400 text-small">
+            Total {workloadTypes.length} item
+          </span>
+          <label className="flex items-center text-default-400 text-small">
+            Rows per page:
+            <select
+              className="bg-transparent outline-none text-default-400 text-small"
+              onChange={onRowsPerPageChange}
+            >
+              <option value="15">15</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
         </div>
         <Modals
           isOpen={isOpen}

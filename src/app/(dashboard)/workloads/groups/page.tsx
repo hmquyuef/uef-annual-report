@@ -44,6 +44,8 @@ const WorkloadGroup = () => {
   };
 
   const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+
   const [filterValue, setFilterValue] = useState("");
   const visibleColumns = useMemo(() => {
     const INITIAL_VISIBLE_COLUMNS = [
@@ -55,7 +57,6 @@ const WorkloadGroup = () => {
     return new Set(INITIAL_VISIBLE_COLUMNS);
   }, []);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
-  const rowsPerPage = 15;
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "name",
     direction: "ascending",
@@ -222,7 +223,10 @@ const WorkloadGroup = () => {
   const handleSubmit = async (formData: Partial<AddWordloadGroup>) => {
     try {
       if (mode === "edit" && selectedItem) {
-        const response = await putUpdateWorkloadGroup(selectedItem.id ?? "", formData);
+        const response = await putUpdateWorkloadGroup(
+          selectedItem.id ?? "",
+          formData
+        );
         console.log(response);
       } else {
         await postAddWorkloadGroup(formData);
@@ -259,6 +263,14 @@ const WorkloadGroup = () => {
     getAllWorkloadGroups();
   }, []);
 
+  const onRowsPerPageChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setRowsPerPage(Number(e.target.value));
+      setPage(1);
+    },
+    []
+  );
+
   return (
     <>
       <div className="flex flex-col gap-4 mt-1">
@@ -276,7 +288,7 @@ const WorkloadGroup = () => {
             Quản lý nhóm công tác
           </BreadcrumbItem>
         </Breadcrumbs>
-        <div className="flex justify-between gap-3 mb-6">
+        <div className="flex justify-between gap-3">
           <Input
             isClearable
             className="w-1/4 sm:max-w-[44%]"
@@ -305,6 +317,23 @@ const WorkloadGroup = () => {
               Xóa
             </Button>
           </div>
+        </div>
+        <div className="flex justify-between items-center mb-6">
+          <span className="text-default-400 text-small">
+            Total {workloadGroups.length} item
+          </span>
+          <label className="flex items-center text-default-400 text-small">
+            Rows per page:
+            <select
+              className="bg-transparent outline-none text-default-400 text-small"
+              onChange={onRowsPerPageChange}
+            >
+              <option value="15">15</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
         </div>
         <Modals
           isOpen={isOpen}
