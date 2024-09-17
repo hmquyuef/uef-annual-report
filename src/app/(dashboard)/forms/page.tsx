@@ -3,6 +3,7 @@
 import Icon from "@/components/Icon";
 import Modals from "@/components/Modals";
 import FormActivity from "@/components/forms/activities/FormActivity";
+import SweetAlert from "@/components/sweetAlert/SweetAlert";
 import {
   ActivityInput,
   ActivityItem,
@@ -36,13 +37,13 @@ import {
 import { Key, useCallback, useEffect, useMemo, useState } from "react";
 
 const Forms = () => {
+  type Activities = (typeof activities)[0];
   const INITIAL_VISIBLE_COLUMNS = [
     "name",
     "workloadTypeName",
     "attendance",
     "description",
   ];
-
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [visibleColumns] = useState<Selection>(
@@ -51,8 +52,24 @@ const Forms = () => {
   const [workloadTypesFilter] = useState<Selection>("all");
   const [workloadTypes, setWorkloadTypes] = useState<WorkloadTypeItem[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
-  type Activities = (typeof activities)[0];
-
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: "age",
+    direction: "ascending",
+  });
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<
+    Partial<AddUpdateActivityItem> | undefined
+  >(undefined);
+  const [mode, setMode] = useState<"add" | "edit">("add");
+  const hasSearchFilter = Boolean(filterValue);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [titleAlert, setTitleAlert] = useState("");
+  const [contentAlert, setContentAlert] = useState("");
+  const [statusAlert, setStatusAlert] = useState<
+    "add" | "update" | "delete" | "error" | "info" | ""
+  >("");
   // Get all activities
   const getListActivities = async () => {
     const response = await getAllActivities();
@@ -63,19 +80,10 @@ const Forms = () => {
     const response = await getWorkloadTypes();
     setWorkloadTypes(response.items);
   };
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "age",
-    direction: "ascending",
-  });
 
-  const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(15);
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<
-    Partial<AddUpdateActivityItem> | undefined
-  >(undefined);
-  const [mode, setMode] = useState<"add" | "edit">("add");
-  const hasSearchFilter = Boolean(filterValue);
+  const handleCloseAlert = useCallback(() => {
+    setAlertOpen(false);
+  }, []);
 
   const headerColumns = useMemo(() => {
     if (visibleColumns === "all") return columns;
@@ -132,7 +140,6 @@ const Forms = () => {
 
   const renderCell = useCallback((activity: Activities, columnKey: Key) => {
     const cellValue = activity[columnKey as keyof Activities];
-
     switch (columnKey) {
       case "name":
         return (
@@ -216,23 +223,36 @@ const Forms = () => {
           participants: formData.participants as ActivityInput[],
         };
         const response = await putUpdateActivity(
-          "",
+          formData.id as string,
           updatedFormData
         );
-        console.log(response);
+        if (response) {
+          setAlertOpen(true);
+          setStatusAlert("update");
+          setTitleAlert("Cập nhật hoạt động thành công!");
+          setContentAlert("");
+        }
       } else {
         const newFormData: Partial<AddUpdateActivityItem> = {
           ...formData,
           participants: formData.participants as ActivityInput[],
         };
-        await postAddActivity(newFormData);
+        const response = await postAddActivity(newFormData);
+        if (response) {
+          setAlertOpen(true);
+          setStatusAlert("add");
+          setTitleAlert("Thêm hoạt động thành công!");
+          setContentAlert("");
+        }
       }
       await getListActivities();
       setIsOpen(false);
       setSelectedItem(undefined);
       setMode("add");
     } catch (error) {
-      console.error("Error submitting form:", error);
+      setStatusAlert("error");
+      setTitleAlert("Đã xảy ra lỗi, vui lòng thử lại sau!");
+      setContentAlert("");
     }
   };
 
@@ -241,6 +261,10 @@ const Forms = () => {
       const selectedKeysArray = Array.from(selectedKeys) as string[];
       if (selectedKeysArray.length > 0) {
         await deleteActivities(selectedKeysArray);
+        setAlertOpen(true);
+        setStatusAlert("delete");
+        setTitleAlert("Xóa hoạt động thành công!");
+        setContentAlert(`Đã xóa ${selectedKeysArray.length} hoạt động!`);
         await getListActivities();
         setSelectedKeys(new Set());
       }
@@ -281,6 +305,7 @@ const Forms = () => {
             </Button>
             <Button
               className="hover:text-white"
+              isDisabled={Array.from(selectedKeys).length === 0}
               color="danger"
               variant="ghost"
               onClick={handleDelete}
@@ -319,10 +344,10 @@ const Forms = () => {
         </div>
         <div className="w-full flex flex-row justify-between items-center gap-3 mb-2">
           <span className="text-default-400 text-small">
-            Total {activities.length} item
+            Số dòng dữ liệu: {activities.length}
           </span>
           <label className="flex items-center text-default-400 text-small">
-            Rows per page:
+            Tổng số dòng/trang:
             <select
               className="bg-transparent outline-none text-default-400 text-small"
               onChange={onRowsPerPageChange}
@@ -452,6 +477,15 @@ const Forms = () => {
               mode={mode}
             />
           }
+        />
+        <SweetAlert
+          open={alertOpen}
+          status={statusAlert}
+          title={<>{titleAlert}</>}
+          content={<>{contentAlert}</>}
+          onClose={handleCloseAlert}
+          confirmButtonText="Xác nhận"
+          isSuccess={true}
         />
       </div>
       <Table

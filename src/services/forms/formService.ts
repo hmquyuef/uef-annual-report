@@ -33,6 +33,7 @@ export interface Participation {
 }
 
 export interface AddUpdateActivityItem {
+    id?: string;
     name: string;
     workloadTypeId: string;
     determinations: Determinations;

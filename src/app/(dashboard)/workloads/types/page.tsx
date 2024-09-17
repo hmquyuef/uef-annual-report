@@ -3,6 +3,7 @@
 import FormType from "@/components/forms/workloads/FormType";
 import Icon from "@/components/Icon";
 import Modals from "@/components/Modals";
+import SweetAlert from "@/components/sweetAlert/SweetAlert";
 import { getWorkloadGroups } from "@/services/workloads/groupService";
 import {
   AddUpdateWorkloadType,
@@ -51,14 +52,6 @@ const WorkloadType = () => {
   >(undefined);
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [workloadTypes, setWorkloadTypes] = useState<WorkloadTypeItem[]>([]);
-  const getAllWorkloadTypes = async () => {
-    const response = await getWorkloadTypes();
-    setWorkloadTypes(response.items);
-  };
-  const getAllWorkloadGroups = async () => {
-    const response = await getWorkloadGroups();
-    setWorkloadGroupItem(response.items);
-  };
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [statusFilter, setStatusFilter] = useState<Selection>("all");
@@ -67,7 +60,12 @@ const WorkloadType = () => {
   const [workloadGroupItem, setWorkloadGroupItem] = useState<
     WorkloadGroupProps[]
   >([]);
-
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [titleAlert, setTitleAlert] = useState("");
+  const [contentAlert, setContentAlert] = useState("");
+  const [statusAlert, setStatusAlert] = useState<
+    "add" | "update" | "delete" | "error" | "info" | ""
+  >("");
   const statusOptions = [
     { name: "Đang kích hoạt", uid: "true", isActived: true },
     { name: "Tạm khóa", uid: "false", isActived: false },
@@ -87,6 +85,19 @@ const WorkloadType = () => {
     direction: "ascending",
   });
   const [isOpen, setIsOpen] = useState(false);
+
+  const getAllWorkloadTypes = async () => {
+    const response = await getWorkloadTypes();
+    setWorkloadTypes(response.items);
+  };
+  const getAllWorkloadGroups = async () => {
+    const response = await getWorkloadGroups();
+    setWorkloadGroupItem(response.items);
+  };
+  const handleCloseAlert = useCallback(() => {
+    setAlertOpen(false);
+  }, []);
+
   const onClear = useCallback(() => {
     setFilterValue("");
     setPage(1);
@@ -279,16 +290,29 @@ const WorkloadType = () => {
           selectedItem.id ?? "",
           formData
         );
-        console.log(response);
+        if (response) {
+          setAlertOpen(true);
+          setStatusAlert("update");
+          setTitleAlert("Cập nhật biểu mẫu thành công!");
+          setContentAlert("");
+        }
       } else {
-        await postAddWorkloadType(formData);
+        const response = await postAddWorkloadType(formData);
+        if (response) {
+          setAlertOpen(true);
+          setStatusAlert("add");
+          setTitleAlert("Thêm biểu mẫu thành công!");
+          setContentAlert("");
+        }
       }
       await getAllWorkloadTypes();
       setIsOpen(false);
       setSelectedItem(undefined);
       setMode("add");
     } catch (error) {
-      console.error("Error submitting form:", error);
+      setStatusAlert("error");
+      setTitleAlert("Đã xảy ra lỗi, vui lòng thử lại sau!");
+      setContentAlert("");
     }
   };
 
@@ -303,6 +327,10 @@ const WorkloadType = () => {
       const selectedKeysArray = Array.from(selectedKeys) as string[];
       if (selectedKeysArray.length > 0) {
         await deleteWorkloadTypes(selectedKeysArray);
+        setAlertOpen(true);
+        setStatusAlert("delete");
+        setTitleAlert("Xóa biểu mẫu thành công!");
+        setContentAlert(`Đã xóa ${selectedKeysArray.length} biểu mẫu!`);
         await getAllWorkloadTypes();
         setSelectedKeys(new Set());
       }
@@ -398,6 +426,7 @@ const WorkloadType = () => {
             <Button
               className="hover:text-white"
               color="danger"
+              isDisabled={Array.from(selectedKeys).length === 0}
               variant="ghost"
               onClick={handleDelete}
               endContent={<Icon name="bx-trash" size={"20px"} />}
@@ -408,10 +437,10 @@ const WorkloadType = () => {
         </div>
         <div className="flex justify-between items-center mb-6">
           <span className="text-default-400 text-small">
-            Total {workloadTypes.length} item
+          Số dòng dữ liệu: {workloadTypes.length}
           </span>
           <label className="flex items-center text-default-400 text-small">
-            Rows per page:
+            Tổng số dòng/trang:
             <select
               className="bg-transparent outline-none text-default-400 text-small"
               onChange={onRowsPerPageChange}
@@ -447,6 +476,15 @@ const WorkloadType = () => {
               mode={mode}
             />
           }
+        />
+        <SweetAlert
+          open={alertOpen}
+          status={statusAlert}
+          title={<>{titleAlert}</>}
+          content={<>{contentAlert}</>}
+          onClose={handleCloseAlert}
+          confirmButtonText="Xác nhận"
+          isSuccess={true}
         />
       </div>
       <Table

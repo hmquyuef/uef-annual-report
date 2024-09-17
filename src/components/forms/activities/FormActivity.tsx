@@ -275,6 +275,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     e.preventDefault();
 
     const formData: Partial<AddUpdateActivityItem> = {
+      id: initialData?.id || "",
       name: name,
       workloadTypeId: selectedWorkloadType,
       determinations: {

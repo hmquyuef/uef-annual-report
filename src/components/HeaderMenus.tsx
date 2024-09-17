@@ -34,7 +34,7 @@ const HeaderMenus = () => {
                 as="button"
                 avatarProps={{
                   isBordered: true,
-                  src: "avatar.jpg",
+                  src: session?.user?.image || "avatar.jpg",
                 }}
                 className="transition-transform"
                 description={`${session?.user?.email}`}

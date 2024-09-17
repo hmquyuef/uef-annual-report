@@ -3,6 +3,7 @@
 import FormGroup from "@/components/forms/workloads/FormGroup";
 import Icon from "@/components/Icon";
 import Modals from "@/components/Modals";
+import SweetAlert from "@/components/sweetAlert/SweetAlert";
 import {
   AddWordloadGroup,
   columns,
@@ -38,14 +39,8 @@ const WorkloadGroup = () => {
   >(undefined);
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [workloadGroups, setWorkloadGroups] = useState<WorkloadGroupItem[]>([]);
-  const getAllWorkloadGroups = async () => {
-    const response = await getWorkloadGroups();
-    setWorkloadGroups(response.items);
-  };
-
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
-
   const [filterValue, setFilterValue] = useState("");
   const visibleColumns = useMemo(() => {
     const INITIAL_VISIBLE_COLUMNS = [
@@ -61,7 +56,23 @@ const WorkloadGroup = () => {
     column: "name",
     direction: "ascending",
   });
+
   const [isOpen, setIsOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [titleAlert, setTitleAlert] = useState("");
+  const [contentAlert, setContentAlert] = useState("");
+  const [statusAlert, setStatusAlert] = useState<
+    "add" | "update" | "delete" | "error" | "info" | ""
+  >("");
+
+  const getAllWorkloadGroups = async () => {
+    const response = await getWorkloadGroups();
+    setWorkloadGroups(response.items);
+  };
+
+  const handleCloseAlert = useCallback(() => {
+    setAlertOpen(false);
+  }, []);
 
   const onClear = useCallback(() => {
     setFilterValue("");
@@ -227,16 +238,29 @@ const WorkloadGroup = () => {
           selectedItem.id ?? "",
           formData
         );
-        console.log(response);
+        if (response) {
+          setAlertOpen(true);
+          setStatusAlert("update");
+          setTitleAlert("Cập nhật nhóm công tác thành công!");
+          setContentAlert("");
+        }
       } else {
-        await postAddWorkloadGroup(formData);
+        const response = await postAddWorkloadGroup(formData);
+        if (response) {
+          setAlertOpen(true);
+          setStatusAlert("add");
+          setTitleAlert("Thêm nhóm công tác thành công!");
+          setContentAlert("");
+        }
       }
       await getAllWorkloadGroups();
       setIsOpen(false);
       setSelectedItem(undefined);
       setMode("add");
     } catch (error) {
-      console.error("Error submitting form:", error);
+      setStatusAlert("error");
+      setTitleAlert("Đã xảy ra lỗi, vui lòng thử lại sau!");
+      setContentAlert("");
     }
   };
 
@@ -251,6 +275,10 @@ const WorkloadGroup = () => {
       const selectedKeysArray = Array.from(selectedKeys) as string[];
       if (selectedKeysArray.length > 0) {
         await deleteWorkloadGroup(selectedKeysArray);
+        setAlertOpen(true);
+        setStatusAlert("delete");
+        setTitleAlert("Xóa nhóm công tác thành công!");
+        setContentAlert(`Đã xóa ${selectedKeysArray.length} nhóm công tác!`);
         await getAllWorkloadGroups();
         setSelectedKeys(new Set());
       }
@@ -309,6 +337,7 @@ const WorkloadGroup = () => {
             </Button>
             <Button
               className="hover:text-white"
+              isDisabled={Array.from(selectedKeys).length === 0}
               color="danger"
               variant="ghost"
               onClick={handleDelete}
@@ -320,10 +349,10 @@ const WorkloadGroup = () => {
         </div>
         <div className="flex justify-between items-center mb-6">
           <span className="text-default-400 text-small">
-            Total {workloadGroups.length} item
+          Số dòng dữ liệu: {workloadGroups.length}
           </span>
           <label className="flex items-center text-default-400 text-small">
-            Rows per page:
+            Tổng số dòng/trang:
             <select
               className="bg-transparent outline-none text-default-400 text-small"
               onChange={onRowsPerPageChange}
@@ -363,6 +392,15 @@ const WorkloadGroup = () => {
               mode={mode}
             />
           }
+        />
+        <SweetAlert
+          open={alertOpen}
+          status={statusAlert}
+          title={<>{titleAlert}</>}
+          content={<>{contentAlert}</>}
+          onClose={handleCloseAlert}
+          confirmButtonText="Xác nhận"
+          isSuccess={true}
         />
       </div>
       <Table
