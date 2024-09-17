@@ -72,7 +72,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [pathPicture, setPathPicture] = useState<string>("");
   const INITIAL_VISIBLE_COLUMNS = [
     "name",
-    "faculityName",
+    "unitName",
     "standard",
     "actions",
   ];
@@ -226,10 +226,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
               />
             </>
           );
-        case "faculityName":
+        case "unitName":
           return (
             <>
-              <p>{user.faculityName}</p>
+              <p>{user.unitName}</p>
             </>
           );
         case "standard":
@@ -287,7 +287,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
       participants: tableUsers.map((user) => ({
         id: user.id,
         fullName: user.fullName,
-        faculityName: user.faculityName,
+        unitName: user.unitName,
         standardNumber: user.standardNumber,
       })),
       description: moTa,
@@ -395,7 +395,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
                         src: "avatar.jpg",
                       }}
                     />
-                    <p>{user.faculityName}</p>
+                    <p>{user.unitName}</p>
                   </div>
                 </AutocompleteItem>
               ))}

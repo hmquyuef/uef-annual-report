@@ -27,8 +27,8 @@ export interface Determinations {
 export interface Participation {
     id: string;
     fullName: string;
-    faculityId: string;
-    faculityName: number;
+    unitId: string;
+    unitName: number;
     standardNumber: number;
 }
 
@@ -45,7 +45,7 @@ export interface AddUpdateActivityItem {
 export interface ActivityInput{
     id: string;
     fullName: string;
-    faculityName: string;
+    unitName: string;
     standardNumber: number;
 }
 

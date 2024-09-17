@@ -3,9 +3,9 @@ import { Key, useCallback, useEffect, useMemo, useState } from "react";
 
 import Icon from "@/components/Icon";
 import {
-  FaculityItem,
-  getAllFaculities,
-} from "@/services/faculities/faculitiesService";
+  UnitItem,
+  getAllUnits,
+} from "@/services/units/unitsService";
 import {
   columnsUserActivities,
   getUsersActivities,
@@ -36,14 +36,14 @@ import Link from "next/link";
 const INITIAL_VISIBLE_COLUMNS = [
   "name",
   "email",
-  "faculityName",
+  "unitName",
   "activitiesIds",
 ];
 
 const Workload = () => {
   const [userActivities, setUserActivities] = useState<UserActivity[]>([]);
   type User = (typeof userActivities)[0];
-  const [faculities, setFaculities] = useState<FaculityItem[]>([]);
+  const [units, setUnits] = useState<UnitItem[]>([]);
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [visibleColumns] = useState<Selection>(
@@ -117,8 +117,8 @@ const Workload = () => {
         );
       case "email":
         return <div>{user.email}</div>;
-      case "faculityName":
-        return <div>{user.faculityName}</div>;
+      case "unitName":
+        return <div>{user.unitName}</div>;
       case "activitiesIds":
         return <div>{user.activitiesIds.length.toString()}</div>;
       default:
@@ -131,9 +131,9 @@ const Workload = () => {
     setUserActivities(response.items);
   };
 
-  const getFaculities = async () => {
-    const response = await getAllFaculities();
-    setFaculities(response.items);
+  const getListUnits = async () => {
+    const response = await getAllUnits();
+    setUnits(response.items);
   };
 
   const onNextPage = useCallback(() => {
@@ -177,18 +177,6 @@ const Workload = () => {
             color="primary"
           />
           <div className="flex gap-3">
-            {/* <Select
-              label="Danh sách Khoa"
-              selectionMode="multiple"
-              selectedKeys={statusFilter}
-              className="max-w-xs"
-              placeholder="Khoa"
-              onSelectionChange={setStatusFilter}
-            >
-              {faculities.map((faculity) => (
-                <SelectItem key={faculity.id}>{faculity.name}</SelectItem>
-              ))}
-            </Select>*/}
             <Dropdown placement="bottom-end">
               <DropdownTrigger className="hidden sm:flex">
                 <Button
@@ -207,8 +195,8 @@ const Workload = () => {
                 selectionMode="multiple"
                 // onSelectionChange={setStatusFilter}
               >
-                {faculities.map((faculity) => (
-                  <DropdownItem key={faculity.id}>{faculity.name}</DropdownItem>
+                {units.map((unit) => (
+                  <DropdownItem key={unit.id}>{unit.name}</DropdownItem>
                 ))}
               </DropdownMenu>
             </Dropdown>
@@ -222,7 +210,7 @@ const Workload = () => {
         </div>
       </div>
     );
-  }, [filterValue, onClear, onSearchChange, faculities]);
+  }, [filterValue, onClear, onSearchChange, units]);
 
   const bottomContent = useMemo(() => {
     return (
@@ -272,7 +260,7 @@ const Workload = () => {
 
   useEffect(() => {
     getAllUserActivities();
-    getFaculities();
+    getListUnits();
   }, []);
 
   return (

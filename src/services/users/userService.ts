@@ -3,7 +3,7 @@ import apiClient from "../apiClient";
 export const columns = [
     { name: "ID", uid: "id"},
     { name: "Họ và tên", uid: "name" },
-    { name: "Đơn vị", uid: "faculityName" },
+    { name: "Đơn vị", uid: "unitName" },
     { name: "Số tiết chuẩn", uid: "standard" },
     { name: "Sự kiện", uid: "actions" },
 ];
@@ -11,7 +11,7 @@ export const columns = [
 export const columnsUserActivities = [
     { uid: "name", label: "Họ và tên", sortable: true },
     { uid: "email", label: "Email"},
-    { uid: "faculityName", label: "Khoa" },
+    { uid: "unitName", label: "Khoa" },
     { uid: "activitiesIds", label: "Số sự kiện" },
 ];
 
@@ -20,7 +20,7 @@ export interface Users {
     userName: string;
     fullName: string;
     email: string;
-    faculityName: string;
+    unitName: string;
     standardNumber: number;
     creationTime: number;
     isActived: boolean;
@@ -31,7 +31,7 @@ export interface UserActivity{
     userName: string;
     fullName: string;
     email: string;
-    faculityName: string;
+    unitName: string;
     activitiesIds: string[];
 }
 
@@ -40,7 +40,7 @@ export interface AddUpdateUsersTable {
     userName: string;
     fullName: string;
     email: string;
-    faculityName: string;
+    unitName: string;
     standardNumber: number;
 }
 

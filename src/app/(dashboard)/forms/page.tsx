@@ -207,7 +207,7 @@ const Forms = () => {
       ...activity,
       participants: activity.participants.map((participant) => ({
         ...participant,
-        faculityName: participant.faculityName.toString(),
+        unitName: participant.unitName.toString(),
       })),
     };
     setSelectedItem(updatedActivity);
