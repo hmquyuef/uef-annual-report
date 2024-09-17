@@ -364,6 +364,7 @@ const Forms = () => {
   }, [
     filterValue,
     activities.length,
+    selectedKeys,
     onRowsPerPageChange,
     handleDelete,
     onClear,
