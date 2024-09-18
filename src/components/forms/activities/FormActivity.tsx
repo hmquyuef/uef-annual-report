@@ -13,6 +13,7 @@ import {
 import {
   Autocomplete,
   AutocompleteItem,
+  Avatar,
   Button,
   DatePicker,
   Input,
@@ -70,12 +71,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [standardValues, setStandardValues] = useState<number | 0>(0);
   const [isUploaded, setIsUploaded] = useState<boolean>(false);
   const [pathPicture, setPathPicture] = useState<string>("");
-  const INITIAL_VISIBLE_COLUMNS = [
-    "name",
-    "unitName",
-    "standard",
-    "actions",
-  ];
+  const INITIAL_VISIBLE_COLUMNS = ["name", "unitName", "standard", "actions"];
   const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
@@ -84,14 +80,15 @@ const FormActivity: React.FC<FormActivityProps> = ({
     const response = await getWorkloadTypes();
     setWorkloadTypes(response.items);
   };
-  const getUserByCode = async (code: string) => {
-    try {
-      const response = await getUsers(code);
-      setFilteredUsers(response.items);
-    } catch (error) {
-      setFilteredUsers([]);
-    }
-  };
+  // const getUserByCode = async (code: string) => {
+  //   try {
+  //     const response = await getUsers(code);
+  //     console.log('response.items :>> ', response.items);
+  //     setFilteredUsers(response.items);
+  //   } catch (error) {
+  //     setFilteredUsers([]);
+  //   }
+  // };
 
   const onAddUsers = (key: Key | null, standard: number | 0) => {
     const itemUser = filteredUsers.find((user) => user.id === key);
@@ -158,13 +155,21 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const onInputChange = (value: string) => {
     setInputSearch(value);
   };
+
   // Gọi API mỗi khi query thay đổi
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
+    const delayDebounceFn = setTimeout(async () => {
       if (inputSearch) {
-        getUserByCode(inputSearch);
+        try {
+          const response = await getUsers(inputSearch);
+          console.log("response.items :>> ", response.items);
+          setFilteredUsers(response.items);
+        } catch (error) {
+          setFilteredUsers([]);
+        }
+        // getUserByCode(inputSearch);
       }
-    }, 1500); // Debounce để tránh call API quá nhiều lần khi gõ liên tục
+    }, 1500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [inputSearch]);
@@ -191,7 +196,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
         if (initialData.participants && initialData.participants.length > 0) {
           setTableUsers(initialData.participants);
         }
-        if(initialData.determinations?.pathImg !== "" && initialData.determinations?.pathImg !== null){
+        if (
+          initialData.determinations?.pathImg !== "" &&
+          initialData.determinations?.pathImg !== null
+        ) {
           setPathPicture(initialData.determinations?.pathImg || "");
           setIsUploaded(true);
         }
@@ -259,14 +267,16 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const onDrop = async (acceptedFiles: File[]) => {
     const formData = new FormData();
     formData.append("file", acceptedFiles[0]);
-    if(pathPicture !== ""){
-      await deleteFiles(pathPicture.replace('http://192.168.98.60:8081/', ''));
+    if (pathPicture !== "") {
+      await deleteFiles(pathPicture.replace("https://api-annual.uef.edu.vn/", ""));
+      // await deleteFiles(pathPicture.replace("http://192.168.98.60:8081/", ""));
     }
     const results = await postFiles(formData);
     console.log(results);
     if (results) {
       setIsUploaded(true);
-      setPathPicture("http://192.168.98.60:8081/" + results);
+      setPathPicture("https://api-annual.uef.edu.vn/" + results);
+      // setPathPicture("http://192.168.98.60:8081/" + results);
     }
   };
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
@@ -293,7 +303,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
       description: moTa,
     };
     console.log("FORM DATA", formData);
-    onSubmit(formData, );
+    onSubmit(formData);
   };
 
   return (
@@ -377,25 +387,30 @@ const FormActivity: React.FC<FormActivityProps> = ({
               label="Tìm kiếm nhân viên"
               labelPlacement="outside"
               variant="faded"
-              placeholder=" "
+              placeholder="Tìm kiếm bằng mã nhân viên..."
               className="col-span-2"
               onSelectionChange={onSelectionChange}
               onInputChange={onInputChange}
+              startContent={<Icon name="bx-search" size="20px" />}
               listboxProps={{
                 emptyContent: "Vui lòng nhập mã nhân viên phù hợp!",
               }}
             >
               {filteredUsers.map((user) => (
                 <AutocompleteItem key={user.id} textValue={user.fullName}>
-                  <div className="flex justify-between items-center">
-                    <User
-                      name={user.fullName}
-                      description={user.userName}
-                      avatarProps={{
-                        src: "avatar.jpg",
-                      }}
+                  <div className="flex gap-2 items-center">
+                    <Avatar
+                      alt={user.userName}
+                      className="flex-shrink-0"
+                      size="sm"
+                      src="avatar.jpg"
                     />
-                    <p>{user.unitName}</p>
+                    <div className="flex flex-col">
+                      <span className="text-small">{user.fullName}</span>
+                      <span className="text-tiny text-default-400">
+                        {user.userName}
+                      </span>
+                    </div>
                   </div>
                 </AutocompleteItem>
               ))}

@@ -2,16 +2,14 @@
 import { Key, useCallback, useEffect, useMemo, useState } from "react";
 
 import Icon from "@/components/Icon";
-import {
-  UnitItem,
-  getAllUnits,
-} from "@/services/units/unitsService";
+import { getAllUnits, UnitItem } from "@/services/units/unitsService";
 import {
   columnsUserActivities,
   getUsersActivities,
   UserActivity,
 } from "@/services/users/userService";
 import {
+  Avatar,
   BreadcrumbItem,
   Breadcrumbs,
   Button,
@@ -28,17 +26,11 @@ import {
   TableCell,
   TableColumn,
   TableHeader,
-  TableRow,
-  User,
+  TableRow
 } from "@nextui-org/react";
 import Link from "next/link";
 
-const INITIAL_VISIBLE_COLUMNS = [
-  "name",
-  "email",
-  "unitName",
-  "activitiesIds",
-];
+const INITIAL_VISIBLE_COLUMNS = ["name", "email", "unitName", "activitiesIds"];
 
 const Workload = () => {
   const [userActivities, setUserActivities] = useState<UserActivity[]>([]);
@@ -46,11 +38,11 @@ const Workload = () => {
   const [units, setUnits] = useState<UnitItem[]>([]);
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
   // const [statusFilter, setStatusFilter] = useState<Selection>("all");
-  const rowsPerPage = 15;
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
@@ -104,7 +96,21 @@ const Workload = () => {
       case "name":
         return (
           <Link href={`workload/${user.id}`}>
-            <User
+            <div className="flex gap-2 items-center">
+              <Avatar
+                alt={user.userName}
+                className="flex-shrink-0"
+                size="sm"
+                src="avatar.jpg"
+              />
+              <div className="flex flex-col">
+                <span className="text-small text-blue-600">{user.fullName}</span>
+                <span className="text-tiny text-default-400">
+                  {user.userName}
+                </span>
+              </div>
+            </div>
+            {/* <User
               avatarProps={{ radius: "lg", src: "avatar.jpg" }}
               description={user.userName}
               name={user.fullName}
@@ -112,7 +118,7 @@ const Workload = () => {
               className="cursor-pointer"
             >
               user.userName
-            </User>
+            </User> */}
           </Link>
         );
       case "email":
@@ -148,6 +154,14 @@ const Workload = () => {
     }
   }, [page]);
 
+  const onRowsPerPageChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setRowsPerPage(Number(e.target.value));
+      setPage(1);
+    },
+    []
+  );
+
   const onSearchChange = useCallback((value?: string) => {
     if (value) {
       setFilterValue(value);
@@ -168,8 +182,8 @@ const Workload = () => {
         <div className="flex justify-between gap-3 items-end">
           <Input
             isClearable
-            className="w-full sm:max-w-[44%]"
-            placeholder="Search by name..."
+            className="w-1/4"
+            placeholder="Tìm kiếm bằng mã nhân viên..."
             startContent={<Icon name="bx-search-alt-2" size="20px" />}
             value={filterValue}
             onClear={() => onClear()}
@@ -183,7 +197,7 @@ const Workload = () => {
                   endContent={<Icon name="bx-chevron-down" size="20px" />}
                   variant="flat"
                 >
-                  Status
+                  Đơn vị
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
@@ -200,17 +214,41 @@ const Workload = () => {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button
+            {/* <Button
               color="primary"
               endContent={<Icon name="bx-plus" size="20px" />}
             >
               Add New
-            </Button>
+            </Button> */}
           </div>
+        </div>
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-default-400 text-small">
+            Số dòng dữ liệu: {userActivities.length}
+          </span>
+          <label className="flex items-center text-default-400 text-small">
+            Tổng số dòng/trang:
+            <select
+              className="bg-transparent outline-none text-default-400 text-small"
+              onChange={onRowsPerPageChange}
+            >
+              <option value="15">15</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
         </div>
       </div>
     );
-  }, [filterValue, onClear, onSearchChange, units]);
+  }, [
+    filterValue,
+    onClear,
+    onSearchChange,
+    onRowsPerPageChange,
+    userActivities,
+    units,
+  ]);
 
   const bottomContent = useMemo(() => {
     return (
@@ -236,7 +274,7 @@ const Workload = () => {
             variant="flat"
             onPress={onPreviousPage}
           >
-            Previous
+            Trang trước
           </Button>
           <Button
             isDisabled={pages === 1}
@@ -244,7 +282,7 @@ const Workload = () => {
             variant="flat"
             onPress={onNextPage}
           >
-            Next
+            Trang sau
           </Button>
         </div>
       </div>

@@ -289,7 +289,7 @@ const Forms = () => {
             isClearable
             className="w-1/4"
             placeholder="Tìm kiếm hoạt động..."
-            startContent={<Icon name="bx-search-alt-2" />}
+            startContent={<Icon name="bx-search-alt-2" size="20px"/>}
             value={filterValue}
             onClear={() => onClear()}
             onValueChange={onSearchChange}
