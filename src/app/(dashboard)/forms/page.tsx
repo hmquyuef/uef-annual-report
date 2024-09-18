@@ -208,6 +208,7 @@ const Forms = () => {
       participants: activity.participants.map((participant) => ({
         ...participant,
         unitName: participant.unitName.toString(),
+        userName: participant.userName, // Ensure userName is included
       })),
     };
     setSelectedItem(updatedActivity);

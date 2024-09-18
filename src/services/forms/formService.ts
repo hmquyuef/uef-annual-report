@@ -26,6 +26,7 @@ export interface Determinations {
 
 export interface Participation {
     id: string;
+    userName: string;
     fullName: string;
     unitId: string;
     unitName: number;
