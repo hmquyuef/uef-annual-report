@@ -2,6 +2,7 @@
 
 import FormGroup from "@/components/forms/workloads/FormGroup";
 import Icon from "@/components/Icon";
+import Loading from "@/components/Loading";
 import Modals from "@/components/Modals";
 import SweetAlert from "@/components/sweetAlert/SweetAlert";
 import {
@@ -42,6 +43,7 @@ const WorkloadGroup = () => {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [filterValue, setFilterValue] = useState("");
+  const [loading, setLoading] = useState(false);
   const visibleColumns = useMemo(() => {
     const INITIAL_VISIBLE_COLUMNS = [
       "name",
@@ -66,8 +68,10 @@ const WorkloadGroup = () => {
   >("");
 
   const getAllWorkloadGroups = async () => {
+    setLoading(true);
     const response = await getWorkloadGroups();
     setWorkloadGroups(response.items);
+    setLoading(false);
   };
 
   const handleCloseAlert = useCallback(() => {
@@ -436,6 +440,8 @@ const WorkloadGroup = () => {
           )}
         </TableHeader>
         <TableBody
+        isLoading={loading}
+        loadingContent={<Loading isOpen={loading}/>}
           emptyContent={"Không có dữ liệu về nhóm công tác"}
           items={sortedItems}
         >

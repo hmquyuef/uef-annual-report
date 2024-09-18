@@ -26,19 +26,22 @@ import {
   TableCell,
   TableColumn,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@nextui-org/react";
 import Link from "next/link";
+import Loading from "@/components/Loading";
 
 const INITIAL_VISIBLE_COLUMNS = ["name", "email", "unitName", "activitiesIds"];
 
 const Workload = () => {
+  const [page, setPage] = useState(1);
   const [userActivities, setUserActivities] = useState<UserActivity[]>([]);
   type User = (typeof userActivities)[0];
   const [units, setUnits] = useState<UnitItem[]>([]);
   const [filterValue, setFilterValue] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [loading, setLoading] = useState(false);
   const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
@@ -47,8 +50,6 @@ const Workload = () => {
     column: "age",
     direction: "ascending",
   });
-
-  const [page, setPage] = useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -91,7 +92,6 @@ const Workload = () => {
 
   const renderCell = useCallback((user: User, columnKey: Key) => {
     const cellValue = user[columnKey as keyof User];
-
     switch (columnKey) {
       case "name":
         return (
@@ -104,21 +104,14 @@ const Workload = () => {
                 src="avatar.jpg"
               />
               <div className="flex flex-col">
-                <span className="text-small text-blue-600">{user.fullName}</span>
+                <span className="text-small text-blue-600">
+                  {user.fullName}
+                </span>
                 <span className="text-tiny text-default-400">
                   {user.userName}
                 </span>
               </div>
             </div>
-            {/* <User
-              avatarProps={{ radius: "lg", src: "avatar.jpg" }}
-              description={user.userName}
-              name={user.fullName}
-              onClick={() => console.log("User ID: ", user.id)}
-              className="cursor-pointer"
-            >
-              user.userName
-            </User> */}
           </Link>
         );
       case "email":
@@ -133,8 +126,10 @@ const Workload = () => {
   }, []);
 
   const getAllUserActivities = async () => {
+    setLoading(true);
     const response = await getUsersActivities("");
     setUserActivities(response.items);
+    setLoading(false);
   };
 
   const getListUnits = async () => {
@@ -339,7 +334,12 @@ const Workload = () => {
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody emptyContent={"No users found"} items={items}>
+          <TableBody
+            isLoading={loading}
+            loadingContent={<Loading isOpen={loading}/>}
+            emptyContent={"No users found"}
+            items={items}
+          >
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (

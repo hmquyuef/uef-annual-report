@@ -2,6 +2,7 @@
 
 import FormType from "@/components/forms/workloads/FormType";
 import Icon from "@/components/Icon";
+import Loading from "@/components/Loading";
 import Modals from "@/components/Modals";
 import SweetAlert from "@/components/sweetAlert/SweetAlert";
 import { getWorkloadGroups } from "@/services/workloads/groupService";
@@ -60,6 +61,7 @@ const WorkloadType = () => {
   const [workloadGroupItem, setWorkloadGroupItem] = useState<
     WorkloadGroupProps[]
   >([]);
+  const [loading, setLoading] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [titleAlert, setTitleAlert] = useState("");
   const [contentAlert, setContentAlert] = useState("");
@@ -87,8 +89,10 @@ const WorkloadType = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const getAllWorkloadTypes = async () => {
+    setLoading(true);
     const response = await getWorkloadTypes();
     setWorkloadTypes(response.items);
+    setLoading(false);
   };
   const getAllWorkloadGroups = async () => {
     const response = await getWorkloadGroups();
@@ -520,6 +524,8 @@ const WorkloadType = () => {
           )}
         </TableHeader>
         <TableBody
+        isLoading={loading}
+        loadingContent={<Loading isOpen={loading}/>}
           emptyContent={"Không có dữ liệu về nhóm công tác"}
           items={sortedItems}
         >

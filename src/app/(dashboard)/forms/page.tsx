@@ -1,6 +1,7 @@
 "use client";
 
 import Icon from "@/components/Icon";
+import Loading from "@/components/Loading";
 import Modals from "@/components/Modals";
 import FormActivity from "@/components/forms/activities/FormActivity";
 import SweetAlert from "@/components/sweetAlert/SweetAlert";
@@ -62,6 +63,7 @@ const Forms = () => {
   const [selectedItem, setSelectedItem] = useState<
     Partial<AddUpdateActivityItem> | undefined
   >(undefined);
+  const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"add" | "edit">("add");
   const hasSearchFilter = Boolean(filterValue);
   const [alertOpen, setAlertOpen] = useState(false);
@@ -72,8 +74,10 @@ const Forms = () => {
   >("");
   // Get all activities
   const getListActivities = async () => {
+    setLoading(true);
     const response = await getAllActivities();
     setActivities(response.items);
+    setLoading(false);
   };
 
   const getAllWorkloadTypes = async () => {
@@ -290,7 +294,7 @@ const Forms = () => {
             isClearable
             className="w-1/4"
             placeholder="Tìm kiếm hoạt động..."
-            startContent={<Icon name="bx-search-alt-2" size="20px"/>}
+            startContent={<Icon name="bx-search-alt-2" size="20px" />}
             value={filterValue}
             onClear={() => onClear()}
             onValueChange={onSearchChange}
@@ -522,10 +526,12 @@ const Forms = () => {
           )}
         </TableHeader>
         <TableBody
+          isLoading={loading}
+          loadingContent={<Loading isOpen={loading} />}
           emptyContent={"Không tìm thấy các hoạt động!"}
           items={sortedItems}
         >
-          {(item) => (
+          {(item: ActivityItem) => (
             <TableRow key={item.id}>
               {(columnKey) => (
                 <TableCell>{renderCell(item, columnKey)}</TableCell>

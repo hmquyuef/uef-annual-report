@@ -27,7 +27,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  Textarea
+  Textarea,
 } from "@nextui-org/react";
 import {
   FormEvent,
@@ -161,12 +161,11 @@ const FormActivity: React.FC<FormActivityProps> = ({
       if (inputSearch) {
         try {
           const response = await getUsers(inputSearch);
-          console.log("response.items :>> ", response.items);
+          // console.log("response.items :>> ", response.items);
           setFilteredUsers(response.items);
         } catch (error) {
           setFilteredUsers([]);
         }
-        // getUserByCode(inputSearch);
       }
     }, 1500);
 
@@ -177,7 +176,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   useEffect(() => {
     const loadUsers = async () => {
       if (mode === "edit" && initialData) {
-        console.log("initialData: ", initialData);
+        // console.log("initialData: ", initialData);
         setSelectedWorkloadType(initialData.workloadTypeId || "");
         setName(initialData.name || "");
         setDeterNumber(initialData.determinations?.number || "");
@@ -279,7 +278,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
       // await deleteFiles(pathPicture.replace("http://192.168.98.60:8081/", ""));
     }
     const results = await postFiles(formData);
-    console.log(results);
+    // console.log(results);
     if (results) {
       setIsUploaded(true);
       setPathPicture("https://api-annual.uef.edu.vn/" + results);
@@ -310,7 +309,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
       })),
       description: moTa,
     };
-    console.log("FORM DATA", formData);
+    // console.log("FORM DATA", formData);
     onSubmit(formData);
   };
 

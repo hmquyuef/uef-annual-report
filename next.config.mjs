@@ -13,7 +13,6 @@ const nextConfig = {
           {
             protocol: 'https',
             hostname: 'api-annual.uef.edu.vn',
-            port: '443',
           },
         ],
       },
