@@ -27,8 +27,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  Textarea,
-  User,
+  Textarea
 } from "@nextui-org/react";
 import {
   FormEvent,
@@ -226,12 +225,20 @@ const FormActivity: React.FC<FormActivityProps> = ({
         case "name":
           return (
             <>
-              <User
-                name={user.fullName}
-                avatarProps={{
-                  src: "avatar.jpg",
-                }}
-              />
+              <div className="flex gap-2 items-center">
+                <Avatar
+                  alt={user.fullName}
+                  className="flex-shrink-0"
+                  size="sm"
+                  src="avatar.jpg"
+                />
+                <div className="flex flex-col">
+                  <span className="text-small">{user.fullName}</span>
+                  <span className="text-tiny text-default-400">
+                    {user.userName}
+                  </span>
+                </div>
+              </div>
             </>
           );
         case "unitName":
@@ -296,6 +303,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
       attendance: { fromDate: attendanceFromDate, toDate: attendanceToDate },
       participants: tableUsers.map((user) => ({
         id: user.id,
+        userName: user.userName,
         fullName: user.fullName,
         unitName: user.unitName,
         standardNumber: user.standardNumber,

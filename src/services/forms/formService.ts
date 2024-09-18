@@ -44,6 +44,7 @@ export interface AddUpdateActivityItem {
 
 export interface ActivityInput{
     id: string;
+    userName: string;
     fullName: string;
     unitName: string;
     standardNumber: number;

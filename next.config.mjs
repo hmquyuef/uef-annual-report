@@ -2,12 +2,18 @@
 const nextConfig = {
     reactStrictMode: false,
     images: {
+        // remotePatterns: [
+        //   {
+        //     protocol: 'http',
+        //     hostname: '192.168.98.60',
+        //     port: '8081',
+        //   },
+        // ],
         remotePatterns: [
           {
-            protocol: 'http',
-            hostname: '172.29.102.14',
-            // hostname: '192.168.98.60',
-            port: '8081',
+            protocol: 'https',
+            hostname: 'api-annual.uef.edu.vn',
+            port: '443',
           },
         ],
       },
