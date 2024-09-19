@@ -269,7 +269,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     },
     [onRemoveUsers]
   );
-  const normalizeUrl = (url: string) => url.replace(/\\/g, '/');
+  // const normalizeUrl = (url: string) => url.replace(/\\/g, '/');
   const onDrop = async (acceptedFiles: File[]) => {
     const formData = new FormData();
     formData.append("file", acceptedFiles[0]);
@@ -280,7 +280,8 @@ const FormActivity: React.FC<FormActivityProps> = ({
     const results = await postFiles(formData);
     if (results) {
       setIsUploaded(true);
-      setPathPicture("https://api-annual.uef.edu.vn/" + normalizeUrl(results.toString()));
+      // const url = "https://api-annual.uef.edu.vn/" + normalizeUrl(results.toString());
+      setPathPicture(results.toString());
       // setPathPicture("http://192.168.98.60:8081/" + normalizeUrl(results.toString()));
     }
   };

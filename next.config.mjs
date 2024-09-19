@@ -7,7 +7,7 @@ const nextConfig = {
         {
           protocol: 'https',
           hostname: 'api-annual.uef.edu.vn',
-          pathname: '/files/**',
+          pathname: '/**/**',
         },
       ],
     },
@@ -19,12 +19,6 @@ const nextConfig = {
     //         port: '8081',
     //       },
     //     ],
-    //     // remotePatterns: [
-    //     //   {
-    //     //     protocol: 'https',
-    //     //     hostname: 'api-annual.uef.edu.vn',
-    //     //   },
-    //     // ],
     //   },
 };
 
