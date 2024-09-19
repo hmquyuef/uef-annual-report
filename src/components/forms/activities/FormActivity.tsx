@@ -16,6 +16,7 @@ import {
   Avatar,
   Button,
   DatePicker,
+  Image,
   Input,
   Select,
   Selection,
@@ -41,7 +42,6 @@ import {
 import { deleteFiles, postFiles } from "@/services/uploads/uploadService";
 import { convertTimestampToYYYYMMDD } from "@/ultils/Utility";
 import { DateValue, parseDate } from "@internationalized/date";
-import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 
 interface FormActivityProps {
