@@ -7,7 +7,7 @@ const nextConfig = {
         {
           protocol: 'https',
           hostname: 'api-annual.uef.edu.vn',
-          pathname: '/files/**',
+          pathname: '/files/',
         },
       ],
     },
