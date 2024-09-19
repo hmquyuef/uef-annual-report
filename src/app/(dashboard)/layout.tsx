@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "../globals.css";
 
-import SessionWrapper from "@/components/SessionWrapper";
-import Link from "next/link";
-import { Image } from "@nextui-org/react";
-import Menus from "@/components/Menus";
 import HeaderMenus from "@/components/HeaderMenus";
+import Menus from "@/components/Menus";
+import SessionWrapper from "@/components/SessionWrapper";
+import { Image } from "@nextui-org/react";
+import Link from "next/link";
 import { Suspense } from "react";
 import { Providers } from "../providers";
 

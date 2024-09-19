@@ -269,7 +269,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     },
     [onRemoveUsers]
   );
-
+  const normalizeUrl = (url: string) => url.replace(/\\/g, '/');
   const onDrop = async (acceptedFiles: File[]) => {
     const formData = new FormData();
     formData.append("file", acceptedFiles[0]);
@@ -278,11 +278,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
       // await deleteFiles(pathPicture.replace("http://192.168.98.60:8081/", ""));
     }
     const results = await postFiles(formData);
-    // console.log(results);
     if (results) {
       setIsUploaded(true);
-      setPathPicture("https://api-annual.uef.edu.vn/" + results);
-      // setPathPicture("http://192.168.98.60:8081/" + results);
+      setPathPicture("https://api-annual.uef.edu.vn/" + normalizeUrl(results.toString()));
+      // setPathPicture("http://192.168.98.60:8081/" + normalizeUrl(results.toString()));
     }
   };
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
