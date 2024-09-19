@@ -3,6 +3,13 @@ const nextConfig = {
     reactStrictMode: false,
     images: {
       domains: ['api-annual.uef.edu.vn'],
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: 'api-annual.uef.edu.vn',
+          pathname: '/files/**',
+        },
+      ],
     },
     // images: {
     //     remotePatterns: [

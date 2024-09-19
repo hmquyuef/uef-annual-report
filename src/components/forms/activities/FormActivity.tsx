@@ -497,7 +497,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
             <input {...getInputProps()} />
             {!isUploaded ? (
               <>
-                <Image src="upload.svg" width={44} height={44} alt="upload" />
+                <Image src="upload.svg" width={44} height={44} loading="lazy" alt="upload" />
                 <p>Kéo thả tệp vào đây hoặc nhấp để chọn tệp</p>
               </>
             ) : (
@@ -507,6 +507,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
                     src={pathPicture}
                     width={120}
                     height={100}
+                    loading="lazy"
                     alt="upload"
                   />
                   <p>Kéo thả tệp khác để thay thế</p>
