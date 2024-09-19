@@ -281,7 +281,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     if (results) {
       setIsUploaded(true);
       // const url = "https://api-annual.uef.edu.vn/" + normalizeUrl(results.toString());
-      setPathPicture(results.toString());
+      setPathPicture("https://api-annual.uef.edu.vn/" + results.toString());
       // setPathPicture("http://192.168.98.60:8081/" + normalizeUrl(results.toString()));
     }
   };
@@ -506,8 +506,8 @@ const FormActivity: React.FC<FormActivityProps> = ({
                 <div className="flex flex-col items-center gap-2 py-3">
                   <Image
                     src={pathPicture}
-                    width={120}
-                    height={100}
+                    width={100}
+                    height={140}
                     loading="lazy"
                     alt="upload"
                   />
