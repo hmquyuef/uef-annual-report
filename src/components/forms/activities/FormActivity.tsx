@@ -60,12 +60,11 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [workloadTypes, setWorkloadTypes] = useState<WorkloadTypeItem[]>([]);
   const [selectedWorkloadType, setSelectedWorkloadType] = useState<string>("");
   const [stt, setStt] = useState<number>(0);
-  const [documentNumber, setDocumentNumber] = useState("");
+  const [documentNumber, setDocumentNumber] = useState<string>("");
   const [name, setName] = useState("");
   const [deterNumber, setDeterNumber] = useState("");
-  const [deterTime, setDeterTime] = useState<number>(0);
-  const [attendanceFromDate, setAttdanceFromDate] = useState<number | 0>(0);
-  const [attendanceToDate, setAttendanceToDate] = useState<number | 0>(0);
+  const [deterFromDate, setDeterFromDate] = useState<number | 0>(0);
+  const [deterEntryDate, setDeterEntryDate] = useState<number | 0>(0);
   const [moTa, setMoTa] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<Users[]>([]);
   const [tableUsers, setTableUsers] = useState<ActivityInput[]>([]);
@@ -127,10 +126,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
     []
   );
 
-  const handleAttendanceFromDateChange = useCallback(
+  const handleDeterFromDateChange = useCallback(
     (date: DateValue) => {
       try {
-        handleDateChange(date, setAttdanceFromDate);
+        handleDateChange(date, setDeterFromDate);
       } catch (error) {
         console.error("Error handling attendance from date change:", error);
       }
@@ -138,21 +137,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
     [handleDateChange]
   );
 
-  const handleAttendanceToDateChange = useCallback(
+  const handleSetDeterEntryDateChange = useCallback(
     (date: DateValue) => {
       try {
-        handleDateChange(date, setAttendanceToDate);
-      } catch (error) {
-        console.error("Error handling attendance to date change:", error);
-      }
-    },
-    [handleDateChange]
-  );
-
-  const handleSetDeterTimeChange = useCallback(
-    (date: DateValue) => {
-      try {
-        handleDateChange(date, setDeterTime);
+        handleDateChange(date, setDeterEntryDate);
       } catch (error) {
         console.error("Error handling determination time change:", error);
       }
@@ -198,15 +186,11 @@ const FormActivity: React.FC<FormActivityProps> = ({
         setSelectedWorkloadType(initialData.workloadTypeId || "");
         setName(initialData.name || "");
         setDeterNumber(initialData.determinations?.number || "");
-        setDeterTime(initialData.determinations?.time || 0);
-        setAttdanceFromDate(
-          initialData.attendance?.fromDate
-            ? new Date(initialData.attendance.fromDate * 1000).getTime() / 1000
-            : 0
-        );
-        setAttendanceToDate(
-          initialData.attendance?.toDate
-            ? new Date(initialData.attendance.toDate * 1000).getTime() / 1000
+        setDeterEntryDate(initialData.determinations?.entryDate || 0);
+        setDeterFromDate(
+          initialData.determinations?.fromDate
+            ? new Date(initialData.determinations.fromDate * 1000).getTime() /
+                1000
             : 0
         );
         if (initialData.participants && initialData.participants.length > 0) {
@@ -319,10 +303,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
       workloadTypeId: selectedWorkloadType,
       determinations: {
         number: deterNumber,
-        time: deterTime,
+        fromDate: deterFromDate,
+        entryDate: deterEntryDate,
         pathImg: pathPicture,
       },
-      attendance: { fromDate: attendanceFromDate, toDate: attendanceToDate },
       participants: tableUsers.map((user) => ({
         id: user.id,
         userName: user.userName,
@@ -340,15 +324,29 @@ const FormActivity: React.FC<FormActivityProps> = ({
   return (
     <>
       <form onSubmit={handleSubmit} className="grid grid-row-1 gap-1">
-        <div className="grid grid-cols-2 gap-6 items-center mb-3">
+        <div className="grid grid-cols-5 gap-6 items-center mb-3">
+          <Input
+            isClearable
+            key={"sothutu"}
+            type="number"
+            label="Số thứ tự"
+            variant="faded"
+            labelPlacement="outside"
+            placeholder=" "
+            value={stt.toString()}
+            onChange={(e) => setStt(Number(e.target.value))}
+            onClear={() => setStt(0)}
+          />
           <Select
             isRequired
             items={workloadTypes}
             label="Loại biểu mẫu"
             placeholder="Chọn loại biểu mẫu"
+            variant="faded"
             labelPlacement="outside"
             defaultSelectedKeys={[initialData?.workloadTypeId || ""]}
             onSelectionChange={handleSelectionChange}
+            className="col-span-4"
           >
             {(type) => (
               <SelectItem key={type.id} textValue={type.name}>
@@ -356,43 +354,30 @@ const FormActivity: React.FC<FormActivityProps> = ({
               </SelectItem>
             )}
           </Select>
-          <div className="grid grid-cols-2 gap-6">
-            <Input
-              isClearable
-              key={"sothutu"}
-              type="number"
-              label="STT"
-              variant="faded"
-              labelPlacement="outside"
-              placeholder=" "
-              value={stt.toString()}
-              onChange={(e) => setStt(Number(e.target.value))}
-              onClear={() => setStt(0)}
-            />
-            <Input
-              isClearable
-              key={"sovbhc"}
-              type="text"
-              label="Số VBHC"
-              variant="faded"
-              labelPlacement="outside"
-              placeholder=" "
-              value={documentNumber}
-              onChange={(e) => setDocumentNumber(e.target.value)}
-              onClear={() => setDocumentNumber("")}
-            />
-          </div>
         </div>
+        <Textarea
+          isRequired
+          key={"tenhoatdong"}
+          minRows={1}
+          label="Tên hoạt động đã thực hiện"
+          variant="faded"
+          labelPlacement="outside"
+          placeholder=" "
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onClear={() => setName("")}
+          className="mb-3"
+        />
         <div className="grid grid-cols-2 gap-6 items-center mb-3">
           <Input
             isClearable
             isRequired
             key={"soquyetdinh"}
             type="text"
-            label="Tờ trình/Kế hoạch/Quyết định"
+            label="Số tờ trình/kế hoạch/quyết định"
             variant="faded"
             labelPlacement="outside"
-            placeholder=""
+            placeholder=" "
             value={deterNumber}
             onChange={(e) => setDeterNumber(e.target.value)}
             onClear={() => setDeterNumber("")}
@@ -400,18 +385,18 @@ const FormActivity: React.FC<FormActivityProps> = ({
 
           <DatePicker
             showMonthAndYearPickers
-            key="Từ ngày"
-            label="Từ ngày"
+            key="ngayky"
+            label="Ngày ký"
             variant="faded"
             granularity="day"
             aria-placeholder={"dd/mm/yyyy"}
             labelPlacement="outside"
             value={
-              attendanceFromDate != 0
+              deterFromDate != 0
                 ? (() => {
                     try {
                       return parseDate(
-                        convertTimestampToYYYYMMDD(attendanceFromDate)
+                        convertTimestampToYYYYMMDD(deterFromDate)
                       );
                     } catch (error) {
                       console.error(
@@ -423,84 +408,17 @@ const FormActivity: React.FC<FormActivityProps> = ({
                   })()
                 : undefined
             }
-            onChange={handleAttendanceFromDateChange}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-6 items-center mb-3">
-          <DatePicker
-            showMonthAndYearPickers
-            key="ngaynhaphdd"
-            label="Ngày nhập"
-            variant="faded"
-            granularity="day"
-            labelPlacement="outside"
-            value={
-              deterTime != 0
-                ? (() => {
-                    try {
-                      return parseDate(convertTimestampToYYYYMMDD(deterTime));
-                    } catch (error) {
-                      console.error(
-                        "Error converting timestamp to YYYYMMDD:",
-                        error
-                      );
-                      return undefined;
-                    }
-                  })()
-                : undefined
-            }
-            onChange={handleSetDeterTimeChange}
-          />
-          <DatePicker
-            showMonthAndYearPickers
-            key="denngat"
-            label="Đến ngày"
-            variant="faded"
-            granularity="day"
-            labelPlacement="outside"
-            value={
-              attendanceToDate != 0
-                ? (() => {
-                    try {
-                      return parseDate(
-                        convertTimestampToYYYYMMDD(attendanceToDate)
-                      );
-                    } catch (error) {
-                      console.error(
-                        "Error converting timestamp to YYYYMMDD:",
-                        error
-                      );
-                      return undefined;
-                    }
-                  })()
-                : undefined
-            }
-            onChange={handleAttendanceToDateChange}
-          />
-        </div>
-        <div className="mb-3">
-          <Input
-            isClearable
-            isRequired
-            key={"tenhoatdong"}
-            type="text"
-            label="Tên hoạt động"
-            variant="faded"
-            labelPlacement="outside"
-            placeholder=" "
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onClear={() => setName("")}
+            onChange={handleDeterFromDateChange}
           />
         </div>
         <div className="flex flex-col gap-3 mb-3">
           <div className="grid grid-cols-4 gap-6">
             <Autocomplete
               defaultItems={filteredUsers}
-              label="Tìm kiếm nhân viên"
+              label="Tra cứu CB-GV-NV"
               labelPlacement="outside"
               variant="faded"
-              placeholder="Tìm kiếm nhân viên..."
+              placeholder=" "
               className="col-span-2"
               onSelectionChange={onSelectionChange}
               onInputChange={onInputChange}
@@ -552,7 +470,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
         </div>
         {tableUsers && tableUsers.length > 0 && (
           <>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 mb-3">
               <h1>Danh sách các thành viên tham gia</h1>
               <Table removeWrapper aria-label="Danh sách nhân viên tham gia">
                 <TableHeader columns={headerColumns}>
@@ -583,19 +501,53 @@ const FormActivity: React.FC<FormActivityProps> = ({
             </div>
           </>
         )}
-        <div className="mb-3">
-          <Textarea
-            key={"ghichu"}
-            label="Ghi chú"
+        <div className="grid grid-cols-4 gap-6 mb-3">
+          <DatePicker
+            showMonthAndYearPickers
+            key="ngaynhaphdd"
+            label="Ngày nhập"
             variant="faded"
-            value={moTa}
+            granularity="day"
+            labelPlacement="outside"
+            value={
+              deterEntryDate != 0
+                ? (() => {
+                    try {
+                      return parseDate(
+                        convertTimestampToYYYYMMDD(deterEntryDate)
+                      );
+                    } catch (error) {
+                      console.error(
+                        "Error converting timestamp to YYYYMMDD:",
+                        error
+                      );
+                      return undefined;
+                    }
+                  })()
+                : undefined
+            }
+            onChange={handleSetDeterEntryDateChange}
+            className="text-[14px] flex justify-end"
+          />
+          <Input
+            isClearable
+            key={"sovbhc"}
+            type="text"
+            label="Số lưu hành chính"
+            variant="faded"
             labelPlacement="outside"
             placeholder=" "
-            onChange={(e) => setMoTa(e.target.value)}
+            value={documentNumber}
+            onChange={(e) => setDocumentNumber(e.target.value)}
+            onClear={() => setDocumentNumber("")}
+            className="text-[14px]"
+            classNames={{
+              mainWrapper: "h-10",
+            }}
           />
         </div>
         {/* Upload file */}
-        <div className="grid grid-rows-1 gap-2">
+        <div className="grid grid-rows-1 gap-2 mb-3">
           <p className="text-[14px]">Tải lên minh chứng</p>
           <div
             {...getRootProps()}
@@ -611,7 +563,9 @@ const FormActivity: React.FC<FormActivityProps> = ({
                   loading="lazy"
                   alt="upload"
                 />
-                <p>Kéo thả tệp vào đây hoặc nhấp để chọn tệp</p>
+                <p className="text-sm">
+                  Kéo thả tệp vào đây hoặc nhấn để chọn tệp
+                </p>
               </>
             ) : (
               <>
@@ -623,12 +577,23 @@ const FormActivity: React.FC<FormActivityProps> = ({
                     loading="lazy"
                     alt="upload"
                   />
-                  <p>Kéo thả tệp khác để thay thế</p>
+                  <p className="text-sm">Kéo thả tệp khác để thay thế</p>
                 </div>
               </>
             )}
           </div>
         </div>
+        <Textarea
+          key={"ghichu"}
+          label="Ghi chú"
+          variant="faded"
+          minRows={1}
+          value={moTa}
+          labelPlacement="outside"
+          placeholder=" "
+          onChange={(e) => setMoTa(e.target.value)}
+          className="mb-3"
+        />
       </form>
     </>
   );

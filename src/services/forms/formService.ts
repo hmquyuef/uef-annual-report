@@ -7,7 +7,6 @@ export interface ActivityItem {
     workloadTypeId: string;
     workloadTypeName: string;
     determinations: Determinations;
-    attendance: Attendance
     participants: Participation[];
     description: string;
     documentNumber: string;
@@ -15,14 +14,10 @@ export interface ActivityItem {
     isActived: boolean;
 }
 
-export interface Attendance {
-    fromDate: number;
-    toDate: number;
-}
-
 export interface Determinations {
     number: string;
-    time: number;
+    fromDate: number;
+    entryDate: number;
     pathImg: string;
 }
 
@@ -41,7 +36,6 @@ export interface AddUpdateActivityItem {
     name: string;
     workloadTypeId: string;
     determinations: Determinations;
-    attendance: Attendance
     participants: ActivityInput[];
     documentNumber: string;
     description: string;
@@ -64,10 +58,10 @@ export const columns = [
     { uid: "stt", label: "STT"},
     { uid: "workloadTypeName", label: "Thuộc loại biểu mẫu" },
     { uid: "name", label: "Tên hoạt động", sortable: true },
-    { uid: "determinationsTime", label: "Thời gian nhập"},
     { uid: "attendance", label: "Thời gian tham dự" },
     { uid: "determination", label: "Minh chứng" },
     { uid: "number", label: "Số VBHC" },
+    { uid: "determinationsTime", label: "Thời gian nhập"},
     { uid: "description", label: "Ghi chú" },
     // { uid: "actions", label: "Sự kiện" },
 ];

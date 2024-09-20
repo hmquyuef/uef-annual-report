@@ -43,7 +43,7 @@ const FormGroup: React.FC<FormGroupProps> = ({
           isRequired
           key={"tennhomcongtac"}
           type="text"
-          label="Tên nhóm công tác"
+          label="Nhóm công tác"
           variant="faded"
           labelPlacement="outside"
           placeholder=" "

@@ -45,10 +45,10 @@ const Forms = () => {
     "stt",
     "workloadTypeName",
     "name",
-    "determinationsTime",
     "attendance",
     "determination",
     "number",
+    "determinationsTime",
     "description",
   ];
   const [filterValue, setFilterValue] = useState("");
@@ -84,7 +84,6 @@ const Forms = () => {
     setLoading(true);
     const response = await getAllActivities();
     setActivities(response.items);
-    console.log("response.items :>> ", response.items);
     setLoading(false);
   };
 
@@ -182,18 +181,20 @@ const Forms = () => {
       case "determinationsTime":
         return (
           <>
-            <p>{convertTimestampToDate(activity.determinations.time)}</p>
+            <p>
+              {activity.determinations.entryDate
+                ? convertTimestampToDate(activity.determinations.entryDate)
+                : ""}
+            </p>
           </>
         );
       case "attendance":
         return (
           <>
             <p>
-              {activity.attendance.fromDate === activity.attendance.toDate
-                ? convertTimestampToDate(activity.attendance.fromDate)
-                : `${convertTimestampToDate(
-                    activity.attendance.fromDate
-                  )} - ${convertTimestampToDate(activity.attendance.toDate)}`}
+              {activity.determinations.fromDate
+                ? convertTimestampToDate(activity.determinations.fromDate)
+                : ""}
             </p>
           </>
         );

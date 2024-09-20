@@ -89,7 +89,7 @@ const FormType: React.FC<FormTypeProps> = ({ onSubmit, initialData, mode }) => {
           isRequired
           key={"tennhomcongtac"}
           type="text"
-          label="Tên công tác"
+          label="Biểu mẫu"
           variant="faded"
           labelPlacement="outside"
           placeholder=" "

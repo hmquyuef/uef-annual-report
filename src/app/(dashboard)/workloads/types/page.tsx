@@ -463,7 +463,7 @@ const WorkloadType = () => {
             setSelectedItem(undefined);
             setMode("add");
           }}
-          title={mode === "edit" ? "Cập nhật công tác" : "Thêm mới công tác"}
+          title={mode === "edit" ? "Cập nhật biểu mẫu" : "Thêm mới biểu mẫu"}
           size="md"
           actionLabel="Xác nhận"
           closeLabel="Quay lại"
