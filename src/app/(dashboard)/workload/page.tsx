@@ -1,7 +1,7 @@
 "use client";
 import { Key, useCallback, useEffect, useMemo, useState } from "react";
-
 import Icon from "@/components/Icon";
+import Loading from "@/components/Loading";
 import { getAllUnits, UnitItem } from "@/services/units/unitsService";
 import {
   columnsUserActivities,
@@ -29,10 +29,7 @@ import {
   TableRow,
 } from "@nextui-org/react";
 import Link from "next/link";
-import Loading from "@/components/Loading";
-
 const INITIAL_VISIBLE_COLUMNS = ["name", "email", "unitName", "activitiesIds"];
-
 const Workload = () => {
   const [page, setPage] = useState(1);
   const [userActivities, setUserActivities] = useState<UserActivity[]>([]);
@@ -66,17 +63,10 @@ const Workload = () => {
 
     if (hasSearchFilter) {
       filteredUsers = filteredUsers.filter((user) =>
-        user.userName.toLowerCase().includes(filterValue.toLowerCase())
+      user.userName.toLowerCase().includes(filterValue.toLowerCase()) ||
+      user.fullName.toLowerCase().includes(filterValue.toLowerCase())
       );
     }
-    // if (
-    //   statusFilter !== "all" &&
-    //   Array.from(statusFilter).length !== statusOptions.length
-    // ) {
-    //   filteredUsers = filteredUsers.filter((user) =>
-    //     Array.from(statusFilter).includes(user.status)
-    //   );
-    // }
 
     return filteredUsers;
   }, [userActivities, filterValue, hasSearchFilter]);
@@ -257,6 +247,7 @@ const Workload = () => {
           isCompact
           showControls
           showShadow
+          initialPage={1}
           color="primary"
           page={page}
           total={pages}

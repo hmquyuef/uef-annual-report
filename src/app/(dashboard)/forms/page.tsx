@@ -78,7 +78,7 @@ const Forms = () => {
   const [statusAlert, setStatusAlert] = useState<
     "add" | "update" | "delete" | "error" | "info" | ""
   >("");
- 
+
   // Get all activities
   const getListActivities = async () => {
     setLoading(true);
@@ -109,8 +109,12 @@ const Forms = () => {
     let filteredActivities = [...activities];
 
     if (hasSearchFilter) {
-      filteredActivities = filteredActivities.filter((user) =>
-        user.name.toLowerCase().includes(filterValue.toLowerCase())
+      filteredActivities = filteredActivities.filter(
+        (activity) =>
+          activity.name.toLowerCase().includes(filterValue.toLowerCase()) ||
+          activity.documentNumber
+            ?.toLowerCase()
+            .includes(filterValue.toLowerCase())
       );
     }
     if (
@@ -435,6 +439,7 @@ const Forms = () => {
               isCompact
               showControls
               showShadow
+              initialPage={1}
               color="primary"
               page={page}
               total={pages}

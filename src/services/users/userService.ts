@@ -11,7 +11,7 @@ export const columns = [
 export const columnsUserActivities = [
     { uid: "name", label: "Họ và tên", sortable: true },
     { uid: "email", label: "Email"},
-    { uid: "unitName", label: "Khoa" },
+    { uid: "unitName", label: "Đơn vị" },
     { uid: "activitiesIds", label: "Số sự kiện" },
 ];
 
