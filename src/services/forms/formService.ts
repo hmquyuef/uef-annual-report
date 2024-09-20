@@ -2,6 +2,7 @@ import apiClient from "@/services/apiClient";
 
 export interface ActivityItem {
     id: string;
+    stt: number;
     name: string;
     workloadTypeId: string;
     workloadTypeName: string;
@@ -9,6 +10,7 @@ export interface ActivityItem {
     attendance: Attendance
     participants: Participation[];
     description: string;
+    documentNumber: string;
     creationTime: number;
     isActived: boolean;
 }
@@ -35,11 +37,13 @@ export interface Participation {
 
 export interface AddUpdateActivityItem {
     id?: string;
+    stt: number;
     name: string;
     workloadTypeId: string;
     determinations: Determinations;
     attendance: Attendance
     participants: ActivityInput[];
+    documentNumber: string;
     description: string;
 }
 
@@ -57,9 +61,12 @@ export interface ActivitiesResponse {
 }
 
 export const columns = [
-    { uid: "name", label: "Tên hoạt động", sortable: true },
+    { uid: "stt", label: "STT"},
     { uid: "workloadTypeName", label: "Thuộc loại biểu mẫu" },
+    { uid: "name", label: "Tên hoạt động", sortable: true },
     { uid: "attendance", label: "Thời gian tham dự" },
+    { uid: "determination", label: "Minh chứng" },
+    { uid: "number", label: "Số VBHC" },
     { uid: "description", label: "Ghi chú" },
     // { uid: "actions", label: "Sự kiện" },
 ];

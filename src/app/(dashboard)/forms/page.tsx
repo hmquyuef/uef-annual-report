@@ -24,6 +24,7 @@ import {
   BreadcrumbItem,
   Breadcrumbs,
   Button,
+  Chip,
   Input,
   Pagination,
   Selection,
@@ -40,9 +41,12 @@ import { Key, useCallback, useEffect, useMemo, useState } from "react";
 const Forms = () => {
   type Activities = (typeof activities)[0];
   const INITIAL_VISIBLE_COLUMNS = [
-    "name",
+    "stt",
     "workloadTypeName",
+    "name",
     "attendance",
+    "determination",
+    "number",
     "description",
   ];
   const [filterValue, setFilterValue] = useState("");
@@ -77,6 +81,7 @@ const Forms = () => {
     setLoading(true);
     const response = await getAllActivities();
     setActivities(response.items);
+    console.log('response.items :>> ', response.items);
     setLoading(false);
   };
 
@@ -145,6 +150,12 @@ const Forms = () => {
   const renderCell = useCallback((activity: Activities, columnKey: Key) => {
     const cellValue = activity[columnKey as keyof Activities];
     switch (columnKey) {
+      case "stt":
+        return (
+          <>
+            <p>{activity.stt}</p>
+          </>
+        );
       case "name":
         return (
           <>
@@ -171,6 +182,31 @@ const Forms = () => {
                     activity.attendance.fromDate
                   )} - ${convertTimestampToDate(activity.attendance.toDate)}`}
             </p>
+          </>
+        );
+      case "determination":
+        return (
+          <>
+            {activity.determinations.pathImg !== undefined &&
+            activity.determinations.pathImg !== "" ? (
+              <>
+                <Icon name="bx-check" size="20px" className="text-green-600" />
+              </>
+            ) : (
+              <></>
+            )}
+          </>
+        );
+      case "number":
+        return (
+          <>
+            {activity.documentNumber && (
+              <>
+                <Chip color="primary" variant="flat">
+                  {activity.documentNumber}
+                </Chip>
+              </>
+            )}
           </>
         );
       case "description":
@@ -457,14 +493,6 @@ const Forms = () => {
             setIsOpen(false);
             setSelectedItem(undefined);
             setMode("add");
-            // const temp =
-            //   selectedItem?.determinations?.pathImg?.replace(
-            //     "http://192.168.98.60:8081/",
-            //     ""
-            //   ) ?? "";
-            // if (temp !== "") {
-            //   await deleteFiles(temp);
-            // }
           }}
           title={mode === "edit" ? "Cập nhật hoạt động" : "Thêm mới hoạt động"}
           size="3xl"
@@ -515,7 +543,7 @@ const Forms = () => {
             <TableColumn
               key={column.uid}
               align={
-                column.uid === "actions" || column.uid === "attendance"
+                column.uid === "stt" || column.uid === "determination" || column.uid === "number" || column.uid === "attendance"
                   ? "center"
                   : "start"
               }

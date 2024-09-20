@@ -57,6 +57,8 @@ const FormActivity: React.FC<FormActivityProps> = ({
 }) => {
   const [workloadTypes, setWorkloadTypes] = useState<WorkloadTypeItem[]>([]);
   const [selectedWorkloadType, setSelectedWorkloadType] = useState<string>("");
+  const [stt, setStt] = useState<number>(0);
+  const [documentNumber, setDocumentNumber] = useState("");
   const [name, setName] = useState("");
   const [deterNumber, setDeterNumber] = useState("");
   const [deterTime, setDeterTime] = useState<number>(0);
@@ -119,20 +121,29 @@ const FormActivity: React.FC<FormActivityProps> = ({
     [workloadTypes]
   );
 
-  const handleAttendanceDateChange = useCallback((date: DateValue) => {
+  const handleAttendanceFromDateChange = useCallback((date: DateValue) => {
     const temp = date.day + "/" + date.month + "/" + date.year;
     const [day, month, year] = temp.split("/").map(Number);
     const convertedDate = new Date(year, month - 1, day);
     if (!isNaN(convertedDate.getTime())) {
       setAttdanceFromDate(convertedDate.getTime() / 1000);
-      setAttendanceToDate(convertedDate.getTime() / 1000);
     } else {
       setAttdanceFromDate(0);
+    }
+  }, []);
+
+  const handleAttendanceToDateChange = useCallback((date: DateValue) => {
+    const temp = date.day + "/" + date.month + "/" + date.year;
+    const [day, month, year] = temp.split("/").map(Number);
+    const convertedDate = new Date(year, month - 1, day);
+    if (!isNaN(convertedDate.getTime())) {
+      setAttendanceToDate(convertedDate.getTime() / 1000);
+    } else {
       setAttendanceToDate(0);
     }
   }, []);
 
-  const handleDateChange = useCallback((date: DateValue) => {
+  const handlesetDeterTimeChange = useCallback((date: DateValue) => {
     const temp = date.day + "/" + date.month + "/" + date.year;
     const [day, month, year] = temp.split("/").map(Number);
     const convertedDate = new Date(year, month - 1, day);
@@ -177,6 +188,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     const loadUsers = async () => {
       if (mode === "edit" && initialData) {
         // console.log("initialData: ", initialData);
+        setStt(initialData.stt || 0);
         setSelectedWorkloadType(initialData.workloadTypeId || "");
         setName(initialData.name || "");
         setDeterNumber(initialData.determinations?.number || "");
@@ -201,6 +213,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
           setPathPicture(initialData.determinations?.pathImg || "");
           setIsUploaded(true);
         }
+        setDocumentNumber(initialData.documentNumber || "");
         setMoTa(initialData.description || "");
       }
     };
@@ -280,9 +293,8 @@ const FormActivity: React.FC<FormActivityProps> = ({
     const results = await postFiles(formData);
     if (results) {
       setIsUploaded(true);
-      // const url = "https://api-annual.uef.edu.vn/" + normalizeUrl(results.toString());
       setPathPicture("https://api-annual.uef.edu.vn/" + results.toString());
-      // setPathPicture("http://192.168.98.60:8081/" + normalizeUrl(results.toString()));
+      // setPathPicture("http://192.168.98.60:8081/" + results.toString());
     }
   };
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
@@ -292,6 +304,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
 
     const formData: Partial<AddUpdateActivityItem> = {
       id: initialData?.id || "",
+      stt: stt,
       name: name,
       workloadTypeId: selectedWorkloadType,
       determinations: {
@@ -307,6 +320,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
         unitName: user.unitName,
         standardNumber: user.standardNumber,
       })),
+      documentNumber: documentNumber,
       description: moTa,
     };
     // console.log("FORM DATA", formData);
@@ -316,7 +330,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   return (
     <>
       <form onSubmit={handleSubmit} className="grid grid-row-1 gap-1">
-        <div className="grid grid-cols-2 gap-3 items-center mb-3">
+        <div className="grid grid-cols-2 gap-6 items-center mb-3">
           <Select
             isRequired
             items={workloadTypes}
@@ -332,26 +346,40 @@ const FormActivity: React.FC<FormActivityProps> = ({
               </SelectItem>
             )}
           </Select>
-          <DatePicker
-            key="thoigianthamdu"
-            label="Thời gian tham dự"
-            variant="faded"
-            labelPlacement="outside"
-            value={
-              attendanceFromDate != 0
-                ? parseDate(convertTimestampToYYYYMMDD(attendanceFromDate))
-                : undefined
-            }
-            onChange={handleAttendanceDateChange}
-          />
+          <div className="grid grid-cols-2 gap-6">
+            <Input
+              isClearable
+              key={"sothutu"}
+              type="number"
+              label="STT"
+              variant="faded"
+              labelPlacement="outside"
+              placeholder=" "
+              value={stt.toString()}
+              onChange={(e) => setStt(Number(e.target.value))}
+              onClear={() => setStt(0)}
+            />
+            <Input
+              isClearable
+              key={"sovbhc"}
+              type="text"
+              label="Số VBHC"
+              variant="faded"
+              labelPlacement="outside"
+              placeholder=" "
+              value={documentNumber}
+              onChange={(e) => setDocumentNumber(e.target.value)}
+              onClear={() => setDocumentNumber("")}
+            />
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 items-center mb-3">
+        <div className="grid grid-cols-2 gap-6 items-center mb-3">
           <Input
             isClearable
             isRequired
             key={"soquyetdinh"}
             type="text"
-            label="Tờ trình/Kết hoạch/Quyết định"
+            label="Tờ trình/Kế hoạch/Quyết định"
             variant="faded"
             labelPlacement="outside"
             placeholder=" "
@@ -360,8 +388,22 @@ const FormActivity: React.FC<FormActivityProps> = ({
             onClear={() => setDeterNumber("")}
           />
           <DatePicker
-            key="ngayquyetdinh"
-            label="Ngày hiệu lực"
+              key="Từ ngày"
+              label="Từ ngày"
+              variant="faded"
+              labelPlacement="outside"
+              value={
+                attendanceFromDate != 0
+                  ? parseDate(convertTimestampToYYYYMMDD(attendanceFromDate))
+                  : undefined
+              }
+              onChange={handleAttendanceFromDateChange}
+            />
+        </div>
+        <div className="grid grid-cols-2 gap-6 items-center mb-3">
+        <DatePicker
+            key="ngaynhaphdd"
+            label="Ngày nhập"
             variant="faded"
             labelPlacement="outside"
             value={
@@ -369,8 +411,21 @@ const FormActivity: React.FC<FormActivityProps> = ({
                 ? parseDate(convertTimestampToYYYYMMDD(deterTime))
                 : undefined
             }
-            onChange={handleDateChange}
+            onChange={handlesetDeterTimeChange}
           />
+          <DatePicker
+              key="denngat"
+              label="Đến ngày"
+              variant="faded"
+              labelPlacement="outside"
+              value={
+                attendanceToDate != 0
+                  ? parseDate(convertTimestampToYYYYMMDD(attendanceToDate))
+                  : undefined
+              }
+              onChange={handleAttendanceToDateChange}
+              className="flex justify-end"
+            />
         </div>
         <div className="mb-3">
           <Input
@@ -388,13 +443,13 @@ const FormActivity: React.FC<FormActivityProps> = ({
           />
         </div>
         <div className="flex flex-col gap-3 mb-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-6">
             <Autocomplete
               defaultItems={filteredUsers}
               label="Tìm kiếm nhân viên"
               labelPlacement="outside"
               variant="faded"
-              placeholder="Tìm kiếm bằng mã nhân viên..."
+              placeholder="Tìm kiếm nhân viên..."
               className="col-span-2"
               onSelectionChange={onSelectionChange}
               onInputChange={onInputChange}
@@ -498,7 +553,13 @@ const FormActivity: React.FC<FormActivityProps> = ({
             <input {...getInputProps()} />
             {!isUploaded ? (
               <>
-                <Image src="upload.svg" width={44} height={44} loading="lazy" alt="upload" />
+                <Image
+                  src="upload.svg"
+                  width={44}
+                  height={44}
+                  loading="lazy"
+                  alt="upload"
+                />
                 <p>Kéo thả tệp vào đây hoặc nhấp để chọn tệp</p>
               </>
             ) : (
