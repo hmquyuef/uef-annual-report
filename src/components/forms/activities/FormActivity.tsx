@@ -48,12 +48,14 @@ interface FormActivityProps {
   onSubmit: (formData: Partial<AddUpdateActivityItem>) => void;
   initialData?: Partial<AddUpdateActivityItem>;
   mode: "add" | "edit";
+  numberActivity?: number;
 }
 
 const FormActivity: React.FC<FormActivityProps> = ({
   onSubmit,
   initialData,
   mode,
+  numberActivity,
 }) => {
   const [workloadTypes, setWorkloadTypes] = useState<WorkloadTypeItem[]>([]);
   const [selectedWorkloadType, setSelectedWorkloadType] = useState<string>("");
@@ -76,20 +78,12 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
+
   // Get all workload types
   const getAllWorkloadTypes = async () => {
     const response = await getWorkloadTypes();
     setWorkloadTypes(response.items);
   };
-  // const getUserByCode = async (code: string) => {
-  //   try {
-  //     const response = await getUsers(code);
-  //     console.log('response.items :>> ', response.items);
-  //     setFilteredUsers(response.items);
-  //   } catch (error) {
-  //     setFilteredUsers([]);
-  //   }
-  // };
 
   const onAddUsers = (key: Key | null, standard: number | 0) => {
     const itemUser = filteredUsers.find((user) => user.id === key);
@@ -121,38 +115,50 @@ const FormActivity: React.FC<FormActivityProps> = ({
     [workloadTypes]
   );
 
-  const handleAttendanceFromDateChange = useCallback((date: DateValue) => {
-    const temp = date.day + "/" + date.month + "/" + date.year;
-    const [day, month, year] = temp.split("/").map(Number);
-    const convertedDate = new Date(year, month - 1, day);
-    if (!isNaN(convertedDate.getTime())) {
-      setAttdanceFromDate(convertedDate.getTime() / 1000);
-    } else {
-      setAttdanceFromDate(0);
-    }
-  }, []);
+  const handleDateChange = useCallback(
+    (date: DateValue, setState: (value: number) => void) => {
+      const temp = `${date.day}/${date.month}/${date.year}`;
+      const [day, month, year] = temp.split("/").map(Number);
+      const convertedDate = new Date(year, month - 1, day);
+      setState(
+        !isNaN(convertedDate.getTime()) ? convertedDate.getTime() / 1000 : 0
+      );
+    },
+    []
+  );
 
-  const handleAttendanceToDateChange = useCallback((date: DateValue) => {
-    const temp = date.day + "/" + date.month + "/" + date.year;
-    const [day, month, year] = temp.split("/").map(Number);
-    const convertedDate = new Date(year, month - 1, day);
-    if (!isNaN(convertedDate.getTime())) {
-      setAttendanceToDate(convertedDate.getTime() / 1000);
-    } else {
-      setAttendanceToDate(0);
-    }
-  }, []);
+  const handleAttendanceFromDateChange = useCallback(
+    (date: DateValue) => {
+      try {
+        handleDateChange(date, setAttdanceFromDate);
+      } catch (error) {
+        console.error("Error handling attendance from date change:", error);
+      }
+    },
+    [handleDateChange]
+  );
 
-  const handlesetDeterTimeChange = useCallback((date: DateValue) => {
-    const temp = date.day + "/" + date.month + "/" + date.year;
-    const [day, month, year] = temp.split("/").map(Number);
-    const convertedDate = new Date(year, month - 1, day);
-    if (!isNaN(convertedDate.getTime())) {
-      setDeterTime(convertedDate.getTime() / 1000);
-    } else {
-      setDeterTime(0);
-    }
-  }, []);
+  const handleAttendanceToDateChange = useCallback(
+    (date: DateValue) => {
+      try {
+        handleDateChange(date, setAttendanceToDate);
+      } catch (error) {
+        console.error("Error handling attendance to date change:", error);
+      }
+    },
+    [handleDateChange]
+  );
+
+  const handleSetDeterTimeChange = useCallback(
+    (date: DateValue) => {
+      try {
+        handleDateChange(date, setDeterTime);
+      } catch (error) {
+        console.error("Error handling determination time change:", error);
+      }
+    },
+    [handleDateChange]
+  );
 
   useEffect(() => {
     getAllWorkloadTypes();
@@ -215,11 +221,13 @@ const FormActivity: React.FC<FormActivityProps> = ({
         }
         setDocumentNumber(initialData.documentNumber || "");
         setMoTa(initialData.description || "");
+      } else {
+        setStt(Number(numberActivity) + 1);
       }
     };
 
     loadUsers();
-  }, [initialData, mode]);
+  }, [initialData, mode, numberActivity]);
 
   const headerColumns = useMemo(() => {
     if (visibleColumns === "all") return columns;
@@ -282,12 +290,15 @@ const FormActivity: React.FC<FormActivityProps> = ({
     },
     [onRemoveUsers]
   );
+
   // const normalizeUrl = (url: string) => url.replace(/\\/g, '/');
   const onDrop = async (acceptedFiles: File[]) => {
     const formData = new FormData();
     formData.append("file", acceptedFiles[0]);
     if (pathPicture !== "") {
-      await deleteFiles(pathPicture.replace("https://api-annual.uef.edu.vn/", ""));
+      await deleteFiles(
+        pathPicture.replace("https://api-annual.uef.edu.vn/", "")
+      );
       // await deleteFiles(pathPicture.replace("http://192.168.98.60:8081/", ""));
     }
     const results = await postFiles(formData);
@@ -298,7 +309,6 @@ const FormActivity: React.FC<FormActivityProps> = ({
     }
   };
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -382,50 +392,91 @@ const FormActivity: React.FC<FormActivityProps> = ({
             label="Tờ trình/Kế hoạch/Quyết định"
             variant="faded"
             labelPlacement="outside"
-            placeholder=" "
+            placeholder=""
             value={deterNumber}
             onChange={(e) => setDeterNumber(e.target.value)}
             onClear={() => setDeterNumber("")}
           />
+
           <DatePicker
-              key="Từ ngày"
-              label="Từ ngày"
-              variant="faded"
-              labelPlacement="outside"
-              value={
-                attendanceFromDate != 0
-                  ? parseDate(convertTimestampToYYYYMMDD(attendanceFromDate))
-                  : undefined
-              }
-              onChange={handleAttendanceFromDateChange}
-            />
+            showMonthAndYearPickers
+            key="Từ ngày"
+            label="Từ ngày"
+            variant="faded"
+            granularity="day"
+            aria-placeholder={"dd/mm/yyyy"}
+            labelPlacement="outside"
+            value={
+              attendanceFromDate != 0
+                ? (() => {
+                    try {
+                      return parseDate(
+                        convertTimestampToYYYYMMDD(attendanceFromDate)
+                      );
+                    } catch (error) {
+                      console.error(
+                        "Error converting timestamp to YYYYMMDD:",
+                        error
+                      );
+                      return undefined;
+                    }
+                  })()
+                : undefined
+            }
+            onChange={handleAttendanceFromDateChange}
+          />
         </div>
         <div className="grid grid-cols-2 gap-6 items-center mb-3">
-        <DatePicker
+          <DatePicker
+            showMonthAndYearPickers
             key="ngaynhaphdd"
             label="Ngày nhập"
             variant="faded"
+            granularity="day"
             labelPlacement="outside"
             value={
               deterTime != 0
-                ? parseDate(convertTimestampToYYYYMMDD(deterTime))
+                ? (() => {
+                    try {
+                      return parseDate(convertTimestampToYYYYMMDD(deterTime));
+                    } catch (error) {
+                      console.error(
+                        "Error converting timestamp to YYYYMMDD:",
+                        error
+                      );
+                      return undefined;
+                    }
+                  })()
                 : undefined
             }
-            onChange={handlesetDeterTimeChange}
+            onChange={handleSetDeterTimeChange}
           />
           <DatePicker
-              key="denngat"
-              label="Đến ngày"
-              variant="faded"
-              labelPlacement="outside"
-              value={
-                attendanceToDate != 0
-                  ? parseDate(convertTimestampToYYYYMMDD(attendanceToDate))
-                  : undefined
-              }
-              onChange={handleAttendanceToDateChange}
-              className="flex justify-end"
-            />
+            showMonthAndYearPickers
+            key="denngat"
+            label="Đến ngày"
+            variant="faded"
+            granularity="day"
+            labelPlacement="outside"
+            value={
+              attendanceToDate != 0
+                ? (() => {
+                    try {
+                      return parseDate(
+                        convertTimestampToYYYYMMDD(attendanceToDate)
+                      );
+                    } catch (error) {
+                      console.error(
+                        "Error converting timestamp to YYYYMMDD:",
+                        error
+                      );
+                      return undefined;
+                    }
+                  })()
+                : undefined
+            }
+            onChange={handleAttendanceToDateChange}
+          />
         </div>
         <div className="mb-3">
           <Input

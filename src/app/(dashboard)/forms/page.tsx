@@ -36,6 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/react";
+
 import { Key, useCallback, useEffect, useMemo, useState } from "react";
 
 const Forms = () => {
@@ -44,6 +45,7 @@ const Forms = () => {
     "stt",
     "workloadTypeName",
     "name",
+    "determinationsTime",
     "attendance",
     "determination",
     "number",
@@ -76,12 +78,13 @@ const Forms = () => {
   const [statusAlert, setStatusAlert] = useState<
     "add" | "update" | "delete" | "error" | "info" | ""
   >("");
+ 
   // Get all activities
   const getListActivities = async () => {
     setLoading(true);
     const response = await getAllActivities();
     setActivities(response.items);
-    console.log('response.items :>> ', response.items);
+    console.log("response.items :>> ", response.items);
     setLoading(false);
   };
 
@@ -172,6 +175,12 @@ const Forms = () => {
         );
       case "workloadTypeName":
         return <h1>{activity.workloadTypeName}</h1>;
+      case "determinationsTime":
+        return (
+          <>
+            <p>{convertTimestampToDate(activity.determinations.time)}</p>
+          </>
+        );
       case "attendance":
         return (
           <>
@@ -509,6 +518,7 @@ const Forms = () => {
               onSubmit={handleSubmit}
               initialData={selectedItem as Partial<AddUpdateActivityItem>}
               mode={mode}
+              numberActivity={activities.length}
             />
           }
         />
@@ -543,7 +553,11 @@ const Forms = () => {
             <TableColumn
               key={column.uid}
               align={
-                column.uid === "stt" || column.uid === "determination" || column.uid === "number" || column.uid === "attendance"
+                column.uid === "stt" ||
+                column.uid === "determination" ||
+                column.uid === "determinationsTime" ||
+                column.uid === "number" ||
+                column.uid === "attendance"
                   ? "center"
                   : "start"
               }

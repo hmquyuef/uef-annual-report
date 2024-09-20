@@ -64,6 +64,7 @@ export const columns = [
     { uid: "stt", label: "STT"},
     { uid: "workloadTypeName", label: "Thuộc loại biểu mẫu" },
     { uid: "name", label: "Tên hoạt động", sortable: true },
+    { uid: "determinationsTime", label: "Thời gian nhập"},
     { uid: "attendance", label: "Thời gian tham dự" },
     { uid: "determination", label: "Minh chứng" },
     { uid: "number", label: "Số VBHC" },
