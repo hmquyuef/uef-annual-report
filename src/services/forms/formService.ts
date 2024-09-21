@@ -18,7 +18,14 @@ export interface Determinations {
     number: string;
     fromDate: number;
     entryDate: number;
-    pathImg: string;
+    file: InfoFile;
+}
+
+export interface InfoFile{
+    type: string;
+    path: string;
+    name: string;
+    size: number;
 }
 
 export interface Participation {

@@ -321,7 +321,7 @@ const Workload = () => {
                 align={column.uid === "activitiesIds" ? "center" : "start"}
                 allowsSorting={column.sortable}
               >
-                {column.label}
+                {column.label.toUpperCase()}
               </TableColumn>
             )}
           </TableHeader>

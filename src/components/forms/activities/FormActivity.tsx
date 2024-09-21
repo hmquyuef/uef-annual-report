@@ -72,7 +72,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [selectedKey, setSelectedKey] = useState<Key | null>(null);
   const [standardValues, setStandardValues] = useState<number | 0>(0);
   const [isUploaded, setIsUploaded] = useState<boolean>(false);
+  const [typePicture, setTypePicture] = useState<string>("");
   const [pathPicture, setPathPicture] = useState<string>("");
+  const [namePicture, setNamePicture] = useState<string>("");
+  const [sizePicture, setSizePicture] = useState<number>(0);
   const INITIAL_VISIBLE_COLUMNS = ["name", "unitName", "standard", "actions"];
   const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
@@ -196,13 +199,14 @@ const FormActivity: React.FC<FormActivityProps> = ({
         if (initialData.participants && initialData.participants.length > 0) {
           setTableUsers(initialData.participants);
         }
-        if (
-          initialData.determinations?.pathImg !== "" &&
-          initialData.determinations?.pathImg !== null
-        ) {
-          setPathPicture(initialData.determinations?.pathImg || "");
+        if (initialData.determinations !== null) {
+          setTypePicture(initialData.determinations?.file.type || "");
+          setPathPicture(initialData.determinations?.file.path || "");
+          setNamePicture(initialData.determinations?.file.name || "");
+          setSizePicture(initialData.determinations?.file.size || 0);
           setIsUploaded(true);
         }
+        if(initialData.determinations?.file.type === "") setIsUploaded(false);
         setDocumentNumber(initialData.documentNumber || "");
         setMoTa(initialData.description || "");
       } else {
@@ -275,7 +279,23 @@ const FormActivity: React.FC<FormActivityProps> = ({
     [onRemoveUsers]
   );
 
-  // const normalizeUrl = (url: string) => url.replace(/\\/g, '/');
+  // Hàm xóa file khi nhấn nút xóa
+  const handleDeletePicture = async () => {
+    if (pathPicture !== "") {
+      await deleteFiles(
+        pathPicture.replace("https://api-annual.uef.edu.vn/", "")
+      );
+      // Cập nhật lại trạng thái sau khi xóa
+      setIsUploaded(false);
+      setPathPicture("");
+      setNamePicture("");
+      setTypePicture("");
+      setSizePicture(0);
+    } else {
+      console.log("Không có file nào để xóa.");
+    }
+  };
+
   const onDrop = async (acceptedFiles: File[]) => {
     const formData = new FormData();
     formData.append("file", acceptedFiles[0]);
@@ -288,7 +308,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
     const results = await postFiles(formData);
     if (results) {
       setIsUploaded(true);
+      setTypePicture(acceptedFiles[0].type);
       setPathPicture("https://api-annual.uef.edu.vn/" + results.toString());
+      setNamePicture(acceptedFiles[0].name);
+      setSizePicture(acceptedFiles[0].size);
       // setPathPicture("http://192.168.98.60:8081/" + results.toString());
     }
   };
@@ -305,7 +328,12 @@ const FormActivity: React.FC<FormActivityProps> = ({
         number: deterNumber,
         fromDate: deterFromDate,
         entryDate: deterEntryDate,
-        pathImg: pathPicture,
+        file: {
+          type: typePicture,
+          path: pathPicture,
+          name: namePicture,
+          size: sizePicture,
+        },
       },
       participants: tableUsers.map((user) => ({
         id: user.id,
@@ -329,7 +357,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
             isClearable
             key={"sothutu"}
             type="number"
-            label="Số thứ tự"
+            label="STT"
             variant="faded"
             labelPlacement="outside"
             placeholder=" "
@@ -533,7 +561,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
             isClearable
             key={"sovbhc"}
             type="text"
-            label="Số lưu hành chính"
+            label="Số VBHC"
             variant="faded"
             labelPlacement="outside"
             placeholder=" "
@@ -558,31 +586,61 @@ const FormActivity: React.FC<FormActivityProps> = ({
               <>
                 <Image
                   src="upload.svg"
-                  width={44}
-                  height={44}
+                  width={40}
+                  height={40}
                   loading="lazy"
                   alt="upload"
                 />
                 <p className="text-sm">
-                  Kéo thả tệp vào đây hoặc nhấn để chọn tệp
+                  Kéo và thả một tập tin vào đây hoặc nhấp để chọn một tập tin
                 </p>
               </>
             ) : (
-              <>
-                <div className="flex flex-col items-center gap-2 py-3">
+              <div className="flex flex-col items-center gap-2 py-3">
+                <div className="grid grid-cols-3 gap-2">
                   <Image
-                    src={pathPicture}
-                    width={100}
-                    height={140}
+                    src={
+                      typePicture === "image/jpeg" ||
+                      typePicture === "image/png"
+                        ? pathPicture
+                        : "file-pdf.svg"
+                    }
+                    width={60}
+                    height={60}
                     loading="lazy"
-                    alt="upload"
+                    alt="file-preview"
                   />
-                  <p className="text-sm">Kéo thả tệp khác để thay thế</p>
+                  <div className="col-span-2 text-center content-center">
+                    <p className="text-sm">{namePicture}</p>
+                    <p className="text-sm">
+                      ({(sizePicture / (1024 * 1024)).toFixed(2)} MB)
+                    </p>
+                  </div>
                 </div>
-              </>
+                <div className="flex gap-3 items-center mt-2">
+                  <Button
+                    color="danger"
+                    size="sm"
+                    variant="bordered"
+                    onClick={handleDeletePicture}
+                    startContent={<Icon name="bx-trash" size="16px" />}
+                  >
+                    Hủy tệp
+                  </Button>
+                  <Button
+                    color="secondary"
+                    size="sm"
+                    variant="bordered"
+                    startContent={<Icon name="bx-cloud-upload" size="16px" />}
+                  >
+                    Chọn tệp thay thế
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         </div>
+
         <Textarea
           key={"ghichu"}
           label="Ghi chú"

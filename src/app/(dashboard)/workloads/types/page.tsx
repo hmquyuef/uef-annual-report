@@ -519,7 +519,7 @@ const WorkloadType = () => {
               allowsSorting={column.sortable}
               className="text-sm"
             >
-              {column.label}
+              {column.label.toUpperCase()}
             </TableColumn>
           )}
         </TableHeader>

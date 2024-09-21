@@ -201,8 +201,8 @@ const Forms = () => {
       case "determination":
         return (
           <>
-            {activity.determinations.pathImg !== undefined &&
-            activity.determinations.pathImg !== "" ? (
+            {activity.determinations.file.path !== undefined &&
+            activity.determinations.file.path !== "" ? (
               <>
                 <Icon name="bx-check" size="20px" className="text-green-600" />
               </>
@@ -569,7 +569,7 @@ const Forms = () => {
               }
               allowsSorting={column.sortable}
             >
-              {column.label}
+              {column.label.toUpperCase()}
             </TableColumn>
           )}
         </TableHeader>
