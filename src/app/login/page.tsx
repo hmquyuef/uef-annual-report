@@ -14,7 +14,7 @@ const Login = () => {
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const handleLogin = async () => {
-    const res = await signIn("google", { callbackUrl: "/forms" });
+    await signIn("google", { callbackUrl: "/forms" });
     // console.log(res);
   };
   return (
