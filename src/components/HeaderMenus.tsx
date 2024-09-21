@@ -15,7 +15,7 @@ const HeaderMenus = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   useEffect(() => {
-    console.log("SESSION: ", session);
+    // console.log("SESSION: ", session);
     if (status === "loading") return;
 
     if (!session) {

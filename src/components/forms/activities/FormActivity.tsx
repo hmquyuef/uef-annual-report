@@ -185,7 +185,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   useEffect(() => {
     const loadUsers = async () => {
       if (mode === "edit" && initialData) {
-        console.log("initialData: ", initialData);
+        // console.log("initialData: ", initialData);
         setStt(initialData.stt || 0);
         setSelectedWorkloadType(initialData.workloadTypeId || "");
         setName(initialData.name || "");
@@ -304,7 +304,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
       // await deleteFiles(pathPicture.replace("http://192.168.98.60:8081/", ""));
     }
     const results = await postFiles(formData);
-    console.log("results :>> ", results);
+    // console.log("results :>> ", results);
     if (results.length > 0) {
       setIsUploaded(true);
       setListPicture(results);

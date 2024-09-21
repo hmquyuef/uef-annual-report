@@ -15,7 +15,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     const res = await signIn("google", { callbackUrl: "/forms" });
-    console.log(res);
+    // console.log(res);
   };
   return (
     <div className="w-full h-dvh bg-gray-100 flex justify-center items-center">

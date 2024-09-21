@@ -10,7 +10,7 @@ const Dashboard = () => {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    console.log("SESSION: ", session);
+    // console.log("SESSION: ", session);
     if (status === "loading") setLoading(true);
     else setLoading(false);
   }, [session, status]);
