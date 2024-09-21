@@ -635,6 +635,18 @@ const FormActivity: React.FC<FormActivityProps> = ({
                             startContent={
                               <Icon name="bx-cloud-upload" size="16px" />
                             }
+                            onClick={() => {
+                              const input = document.createElement("input");
+                              input.type = "file";
+                              input.onchange = (event) => {
+                                const files = (event.target as HTMLInputElement)
+                                  .files;
+                                if (files && files.length > 0) {
+                                  onDrop(Array.from(files));
+                                }
+                              };
+                              input.click();
+                            }}
                           >
                             Chọn tệp thay thế
                           </Button>
