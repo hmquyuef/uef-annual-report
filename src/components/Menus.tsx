@@ -125,7 +125,7 @@ const Menus = () => {
           }
           //redirect to login page if user has no roles
           else {
-            window.location.href = "/login";
+            window.location.href = "/not-permission";
           }
         }
       }
