@@ -39,7 +39,11 @@ import {
   useState,
 } from "react";
 
-import { deleteFiles, postFiles } from "@/services/uploads/uploadService";
+import {
+  deleteFiles,
+  FileItem,
+  postFiles,
+} from "@/services/uploads/uploadService";
 import { convertTimestampToYYYYMMDD } from "@/ultils/Utility";
 import { DateValue, parseDate } from "@internationalized/date";
 import { useDropzone } from "react-dropzone";
@@ -71,11 +75,8 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [inputSearch, setInputSearch] = useState<string>("");
   const [selectedKey, setSelectedKey] = useState<Key | null>(null);
   const [standardValues, setStandardValues] = useState<number | 0>(0);
+  const [listPicture, setListPicture] = useState<FileItem[]>([]);
   const [isUploaded, setIsUploaded] = useState<boolean>(false);
-  const [typePicture, setTypePicture] = useState<string>("");
-  const [pathPicture, setPathPicture] = useState<string>("");
-  const [namePicture, setNamePicture] = useState<string>("");
-  const [sizePicture, setSizePicture] = useState<number>(0);
   const INITIAL_VISIBLE_COLUMNS = ["name", "unitName", "standard", "actions"];
   const [visibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
@@ -184,7 +185,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   useEffect(() => {
     const loadUsers = async () => {
       if (mode === "edit" && initialData) {
-        // console.log("initialData: ", initialData);
+        console.log("initialData: ", initialData);
         setStt(initialData.stt || 0);
         setSelectedWorkloadType(initialData.workloadTypeId || "");
         setName(initialData.name || "");
@@ -199,14 +200,15 @@ const FormActivity: React.FC<FormActivityProps> = ({
         if (initialData.participants && initialData.participants.length > 0) {
           setTableUsers(initialData.participants);
         }
-        if (initialData.determinations !== null) {
-          setTypePicture(initialData.determinations?.file.type || "");
-          setPathPicture(initialData.determinations?.file.path || "");
-          setNamePicture(initialData.determinations?.file.name || "");
-          setSizePicture(initialData.determinations?.file.size || 0);
+        if (initialData.determinations?.file !== null) {
+          setListPicture(
+            initialData.determinations?.file
+              ? [initialData.determinations.file]
+              : []
+          );
           setIsUploaded(true);
         }
-        if(initialData.determinations?.file.type === "") setIsUploaded(false);
+        if (initialData.determinations?.file.type === "") setIsUploaded(false);
         setDocumentNumber(initialData.documentNumber || "");
         setMoTa(initialData.description || "");
       } else {
@@ -279,18 +281,14 @@ const FormActivity: React.FC<FormActivityProps> = ({
     [onRemoveUsers]
   );
 
-  // Hàm xóa file khi nhấn nút xóa
   const handleDeletePicture = async () => {
-    if (pathPicture !== "") {
+    if (listPicture[0].path !== "") {
       await deleteFiles(
-        pathPicture.replace("https://api-annual.uef.edu.vn/", "")
+        listPicture[0].path.replace("https://api-annual.uef.edu.vn/", "")
       );
       // Cập nhật lại trạng thái sau khi xóa
       setIsUploaded(false);
-      setPathPicture("");
-      setNamePicture("");
-      setTypePicture("");
-      setSizePicture(0);
+      setListPicture([{ type: "", path: "", name: "", size: 0 }]);
     } else {
       console.log("Không có file nào để xóa.");
     }
@@ -299,22 +297,20 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const onDrop = async (acceptedFiles: File[]) => {
     const formData = new FormData();
     formData.append("file", acceptedFiles[0]);
-    if (pathPicture !== "") {
+    if (listPicture[0].path !== "") {
       await deleteFiles(
-        pathPicture.replace("https://api-annual.uef.edu.vn/", "")
+        listPicture[0].path.replace("https://api-annual.uef.edu.vn/", "")
       );
       // await deleteFiles(pathPicture.replace("http://192.168.98.60:8081/", ""));
     }
     const results = await postFiles(formData);
-    if (results) {
+    console.log("results :>> ", results);
+    if (results.length > 0) {
       setIsUploaded(true);
-      setTypePicture(acceptedFiles[0].type);
-      setPathPicture("https://api-annual.uef.edu.vn/" + results.toString());
-      setNamePicture(acceptedFiles[0].name);
-      setSizePicture(acceptedFiles[0].size);
-      // setPathPicture("http://192.168.98.60:8081/" + results.toString());
+      setListPicture(results);
     }
   };
+
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -329,10 +325,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
         fromDate: deterFromDate,
         entryDate: deterEntryDate,
         file: {
-          type: typePicture,
-          path: pathPicture,
-          name: namePicture,
-          size: sizePicture,
+          type: listPicture[0].type,
+          path: listPicture[0].path,
+          name: listPicture[0].name,
+          size: listPicture[0].size,
         },
       },
       participants: tableUsers.map((user) => ({
@@ -596,47 +592,57 @@ const FormActivity: React.FC<FormActivityProps> = ({
                 </p>
               </>
             ) : (
-              <div className="flex flex-col items-center gap-2 py-3">
-                <div className="grid grid-cols-3 gap-2">
-                  <Image
-                    src={
-                      typePicture === "image/jpeg" ||
-                      typePicture === "image/png"
-                        ? pathPicture
-                        : "file-pdf.svg"
-                    }
-                    width={60}
-                    height={60}
-                    loading="lazy"
-                    alt="file-preview"
-                  />
-                  <div className="col-span-2 text-center content-center">
-                    <p className="text-sm">{namePicture}</p>
-                    <p className="text-sm">
-                      ({(sizePicture / (1024 * 1024)).toFixed(2)} MB)
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3 items-center mt-2">
-                  <Button
-                    color="danger"
-                    size="sm"
-                    variant="bordered"
-                    onClick={handleDeletePicture}
-                    startContent={<Icon name="bx-trash" size="16px" />}
-                  >
-                    Hủy tệp
-                  </Button>
-                  <Button
-                    color="secondary"
-                    size="sm"
-                    variant="bordered"
-                    startContent={<Icon name="bx-cloud-upload" size="16px" />}
-                  >
-                    Chọn tệp thay thế
-                  </Button>
-                </div>
-              </div>
+              <>
+                {listPicture &&
+                  listPicture.map((item) => (
+                    <>
+                      <div className="flex flex-col items-center gap-2 py-3">
+                        <div className="grid grid-cols-3 gap-2">
+                          <Image
+                            src={
+                              item.type === "image/jpeg" ||
+                              item.type === "image/png"
+                                ? "https://api-annual.uef.edu.vn/" +
+                                  listPicture[0].path
+                                : "file-pdf.svg"
+                            }
+                            width={60}
+                            height={60}
+                            loading="lazy"
+                            alt="file-preview"
+                          />
+                          <div className="col-span-2 text-center content-center">
+                            <p className="text-sm">{listPicture[0].name}</p>
+                            <p className="text-sm">
+                              ({(item.size / (1024 * 1024)).toFixed(2)} MB)
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 items-center mt-2">
+                          <Button
+                            color="danger"
+                            size="sm"
+                            variant="bordered"
+                            onClick={handleDeletePicture}
+                            startContent={<Icon name="bx-trash" size="16px" />}
+                          >
+                            Hủy tệp
+                          </Button>
+                          <Button
+                            color="secondary"
+                            size="sm"
+                            variant="bordered"
+                            startContent={
+                              <Icon name="bx-cloud-upload" size="16px" />
+                            }
+                          >
+                            Chọn tệp thay thế
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ))}
+              </>
             )}
           </div>
         </div>

@@ -1,8 +1,15 @@
 import apiClient from "../apiClient";
 import { AxiosResponse } from "axios";
 
-export async function postFiles(data: FormData): Promise<FormData> {
-    const response = await apiClient.post<FormData>('api/files/upload', data, {
+export interface FileItem {
+    type: string;
+    path: string;
+    name: string;
+    size: number;
+}
+
+export async function postFiles(data: FormData): Promise<FileItem[]> {
+    const response = await apiClient.post<FileItem[]>('api/files/upload', data, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
