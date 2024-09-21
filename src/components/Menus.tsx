@@ -116,11 +116,17 @@ const Menus = () => {
         const userId = user.items[0]?.id;
         if (userId) {
           const permissions = await getAllPermissions(userId);
-          setRoles(
-            permissions.items[0].roles.map(
-              (role: { name: string }) => role.name
-            )
-          );
+          if (permissions.items.length > 0){
+            setRoles(
+              permissions.items[0].roles.map(
+                (role: { name: string }) => role.name
+              )
+            );
+          }
+          //redirect to login page if user has no roles
+          else {
+            window.location.href = "/login";
+          }
         }
       }
     };
