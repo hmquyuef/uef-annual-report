@@ -171,13 +171,12 @@ const FormActivity: React.FC<FormActivityProps> = ({
       if (inputSearch) {
         try {
           const response = await getUsers(inputSearch);
-          // console.log("response.items :>> ", response.items);
           setFilteredUsers(response.items);
         } catch (error) {
           setFilteredUsers([]);
         }
       }
-    }, 1500);
+    }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
   }, [inputSearch]);
@@ -298,14 +297,14 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const onDrop = async (acceptedFiles: File[]) => {
     const formData = new FormData();
     formData.append("file", acceptedFiles[0]);
-    if (listPicture[0].path !== "") {
+    console.log('acceptedFiles[0] :>> ', acceptedFiles[0]);
+    if (listPicture[0]?.path !== "") {
       await deleteFiles(
-        listPicture[0].path.replace("https://api-annual.uef.edu.vn/", "")
+        listPicture[0]?.path.replace("https://api-annual.uef.edu.vn/", "")
       );
-      // await deleteFiles(pathPicture.replace("http://192.168.98.60:8081/", ""));
     }
     const results = await postFiles(formData);
-    // console.log("results :>> ", results);
+    console.log("results :>> ", results);
     if (results.length > 0) {
       setIsUploaded(true);
       setListPicture(results);
