@@ -29,13 +29,13 @@ const menuItems: MenuSection[] = [
         icon: "bx-list-check",
         label: "Công tác",
         href: "/workload",
-        roles: ["admin", "user"],
+        roles: ["admin"],
         children: null,
       },
     ],
   },
   {
-    title: "systems",
+    title: "chức năng",
     items: [
       {
         icon: "bx-list-ol",
@@ -48,20 +48,20 @@ const menuItems: MenuSection[] = [
         icon: "bx-file",
         label: "KL công tác",
         href: "/workloads",
-        roles: ["admin", "user"],
+        roles: ["admin"],
         children: [
           {
             icon: "bx-file",
             label: "Biểu mẫu",
             href: "/workloads/types",
-            roles: ["admin", "user"],
+            roles: ["admin"],
             children: null,
           },
           {
             icon: "bx-file",
             label: "Nhóm công tác",
             href: "/workloads/groups",
-            roles: ["admin", "user"],
+            roles: ["admin"],
             children: null,
           },
         ],
@@ -70,7 +70,7 @@ const menuItems: MenuSection[] = [
         icon: "bx-cog",
         label: "Cài đặt",
         href: "/settings",
-        roles: ["user"],
+        roles: ["admin"],
         children: null,
       },
     ],

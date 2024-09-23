@@ -85,6 +85,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   // Get all workload types
   const getAllWorkloadTypes = async () => {
     const response = await getWorkloadTypes();
+    console.log('response :>> ', response);
     setWorkloadTypes(response.items);
   };
 
@@ -325,10 +326,10 @@ const FormActivity: React.FC<FormActivityProps> = ({
         fromDate: deterFromDate,
         entryDate: deterEntryDate,
         file: {
-          type: listPicture[0].type,
-          path: listPicture[0].path,
-          name: listPicture[0].name,
-          size: listPicture[0].size,
+          type: listPicture[0]?.type ?? "",
+          path: listPicture[0]?.path ?? "",
+          name: listPicture[0]?.name ?? "",
+          size: listPicture[0]?.size ?? 0,
         },
       },
       participants: tableUsers.map((user) => ({
@@ -341,7 +342,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
       documentNumber: documentNumber,
       description: moTa,
     };
-    // console.log("FORM DATA", formData);
+    console.log("FORM DATA", formData);
     onSubmit(formData);
   };
 
@@ -398,7 +399,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
             isRequired
             key={"soquyetdinh"}
             type="text"
-            label="Số tờ trình/kế hoạch/quyết định"
+            label="Số Tờ trình/Kế hoạch/Quyết định"
             variant="faded"
             labelPlacement="outside"
             placeholder=" "
@@ -557,7 +558,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
             isClearable
             key={"sovbhc"}
             type="text"
-            label="Số VBHC"
+            label="Số lưu HC"
             variant="faded"
             labelPlacement="outside"
             placeholder=" "
