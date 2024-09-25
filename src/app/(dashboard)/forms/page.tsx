@@ -36,7 +36,6 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/react";
-import { col } from "framer-motion/client";
 
 import { Key, useCallback, useEffect, useMemo, useState } from "react";
 
