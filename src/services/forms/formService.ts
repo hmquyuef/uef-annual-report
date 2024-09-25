@@ -68,7 +68,7 @@ export const columns = [
     { uid: "attendance", label: "Ngày ký" },
     { uid: "determination", label: "Minh chứng" },
     { uid: "number", label: "Số VBHC" },
-    { uid: "determinationsTime", label: "Thời gian nhập"},
+    { uid: "determinationsTime", label: "Ngày nhập"},
     { uid: "description", label: "Ghi chú" },
     // { uid: "actions", label: "Sự kiện" },
 ];
