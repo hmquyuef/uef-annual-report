@@ -55,7 +55,7 @@ export interface UsersACtivitiesResponse {
 }
 
 export async function getListUsers(): Promise<UsersResponse> {
-    const response = await apiClient.get<UsersResponse>('api/users');
+    const response = await apiClient.get<UsersResponse>('api/users?PageSizes=9999');
     return response.data;
 }
 

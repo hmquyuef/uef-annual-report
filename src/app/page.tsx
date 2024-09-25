@@ -4,39 +4,17 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-// const Home = () => {
-//   const { data: session } = useSession();
-
-//   return (
-//     <>
-//       {session ? (
-//         <>
-//           <Dashboard />
-//         </>
-//       ) : (
-//         <>
-//           <Login />
-//         </>
-//       )}
-//     </>
-//   );
-// };
-// export default Home;
 const Home = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "loading") {
-      return;
-    }
-
     if (session) {
-      router.push("/workload");
+      router.push("/forms");
     } else {
       router.push("/login");
     }
-  }, [session, status, router]);
+  }, [session, router]);
 
   return null;
 };

@@ -8,20 +8,9 @@ import {
   User,
 } from "@nextui-org/react";
 import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 const HeaderMenus = () => {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  useEffect(() => {
-    // console.log("SESSION: ", session);
-    if (status === "loading") return;
-
-    if (!session) {
-      router.push("/login");
-    }
-  }, [session, status, router]);
+  const { data: session } = useSession();
 
   return (
     <div className="sticky top-0 bg-white z-20 shadow-sm">
@@ -45,7 +34,7 @@ const HeaderMenus = () => {
               <DropdownItem
                 key="logout"
                 color="danger"
-                onClick={() => signOut()}
+                onClick={() => signOut({ callbackUrl: "/login" })}
               >
                 Log Out
               </DropdownItem>

@@ -14,9 +14,9 @@ const Login = () => {
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const handleLogin = async () => {
-    await signIn("google", { callbackUrl: "/forms" });
-    // console.log(res);
+    await signIn("google", { callbackUrl: "/process-login" });
   };
+
   return (
     <div className="w-full h-dvh bg-gray-100 flex justify-center items-center">
       <div className="w-1/4 bg-white rounded-xl shadow-lg mb-16">
@@ -63,7 +63,7 @@ const Login = () => {
                 label: "text-md",
               }}
             />
-            <Checkbox defaultSelected size="md">
+            <Checkbox size="md">
               Ghi nhớ đăng nhập
             </Checkbox>
             <Button

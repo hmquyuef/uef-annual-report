@@ -1,12 +1,12 @@
 "use client";
 
 import { getAllPermissions } from "@/services/permissions/permissionService";
-import { getUsers } from "@/services/users/userService";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Icon from "./Icon";
+import { getUsers } from "@/services/users/userService";
 
 type MenuItem = {
   icon: string;
@@ -109,29 +109,27 @@ const Menus = () => {
   const [roles, setRoles] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchUserPermissions = async () => {
+    const getUserPermissions = async () => {
       const email = session?.user?.email;
       if (email) {
         const user = await getUsers(email);
         const userId = user.items[0]?.id;
         if (userId) {
           const permissions = await getAllPermissions(userId);
-          if (permissions.items.length > 0){
+          if (permissions.items.length > 0) {
             setRoles(
               permissions.items[0].roles.map(
                 (role: { name: string }) => role.name
               )
             );
-          }
-          //redirect to login page if user has no roles
-          else {
+          } else {
             window.location.href = "/not-permission";
           }
         }
       }
     };
 
-    fetchUserPermissions();
+    getUserPermissions();
   }, [session]);
 
   const toggleMenu = (label: string) => {

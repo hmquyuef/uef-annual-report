@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "../globals.css";
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   description: "Phần mềm Quản lý tiết chuẩn",
 };
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

@@ -5,7 +5,7 @@ import {
   ActivityInput,
   AddUpdateActivityItem,
 } from "@/services/forms/formService";
-import { columns, getUsers, Users } from "@/services/users/userService";
+import { columns, getListUsers, Users } from "@/services/users/userService";
 import {
   getWorkloadTypes,
   WorkloadTypeItem,
@@ -72,7 +72,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [moTa, setMoTa] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<Users[]>([]);
   const [tableUsers, setTableUsers] = useState<ActivityInput[]>([]);
-  const [inputSearch, setInputSearch] = useState<string>("");
+  // const [inputSearch, setInputSearch] = useState<string>("");
   const [selectedKey, setSelectedKey] = useState<Key | null>(null);
   const [standardValues, setStandardValues] = useState<number | 0>(0);
   const [listPicture, setListPicture] = useState<FileItem[]>([]);
@@ -85,8 +85,13 @@ const FormActivity: React.FC<FormActivityProps> = ({
   // Get all workload types
   const getAllWorkloadTypes = async () => {
     const response = await getWorkloadTypes();
-    console.log('response :>> ', response);
     setWorkloadTypes(response.items);
+  };
+
+  const getAllUsers = async () => {
+    const response = await getListUsers();
+    setFilteredUsers(response.items);
+    console.log('response.items :>> ', response.items);
   };
 
   const onAddUsers = (key: Key | null, standard: number | 0) => {
@@ -96,7 +101,6 @@ const FormActivity: React.FC<FormActivityProps> = ({
       setTableUsers((prevTableUsers) => [...prevTableUsers, itemUser]);
       setStandardValues(0);
       setSelectedKey(null);
-      setFilteredUsers([]);
     }
   };
 
@@ -155,31 +159,32 @@ const FormActivity: React.FC<FormActivityProps> = ({
 
   useEffect(() => {
     getAllWorkloadTypes();
+    getAllUsers();
   }, []);
 
   const onSelectionChange = (key: Key | null) => {
     setSelectedKey(key);
   };
 
-  const onInputChange = (value: string) => {
-    setInputSearch(value);
-  };
+  // const onInputChange = (value: string) => {
+  //   setInputSearch(value);
+  // };
 
   // Gọi API mỗi khi query thay đổi
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-      if (inputSearch) {
-        try {
-          const response = await getUsers(inputSearch);
-          setFilteredUsers(response.items);
-        } catch (error) {
-          setFilteredUsers([]);
-        }
-      }
-    }, 1000);
+  // useEffect(() => {
+  //   const delayDebounceFn = setTimeout(async () => {
+  //     if (inputSearch) {
+  //       try {
+  //         const response = await getUsers(inputSearch);
+  //         setFilteredUsers(response.items);
+  //       } catch (error) {
+  //         setFilteredUsers([]);
+  //       }
+  //     }
+  //   }, 1000);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [inputSearch]);
+  //   return () => clearTimeout(delayDebounceFn);
+  // }, [inputSearch]);
 
   // Populate form data in edit mode
   useEffect(() => {
@@ -285,6 +290,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     if (listPicture[0].path !== "") {
       await deleteFiles(
         listPicture[0].path.replace("https://api-annual.uef.edu.vn/", "")
+        // listPicture[0].path.replace("http://192.168.98.60:8081/", "")
       );
       // Cập nhật lại trạng thái sau khi xóa
       setIsUploaded(false);
@@ -297,10 +303,11 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const onDrop = async (acceptedFiles: File[]) => {
     const formData = new FormData();
     formData.append("file", acceptedFiles[0]);
-    console.log('acceptedFiles[0] :>> ', acceptedFiles[0]);
+    console.log("acceptedFiles[0] :>> ", acceptedFiles[0]);
     if (listPicture[0]?.path !== "") {
       await deleteFiles(
         listPicture[0]?.path.replace("https://api-annual.uef.edu.vn/", "")
+        // listPicture[0]?.path.replace("http://192.168.98.60:8081/", "")
       );
     }
     const results = await postFiles(formData);
@@ -445,7 +452,6 @@ const FormActivity: React.FC<FormActivityProps> = ({
               placeholder=" "
               className="col-span-2"
               onSelectionChange={onSelectionChange}
-              onInputChange={onInputChange}
               startContent={<Icon name="bx-search" size="20px" />}
               listboxProps={{
                 emptyContent: "Vui lòng nhập mã nhân viên phù hợp!",
