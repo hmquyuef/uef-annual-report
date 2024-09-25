@@ -5,7 +5,11 @@ import {
   ActivityInput,
   AddUpdateActivityItem,
 } from "@/services/forms/formService";
-import { columns, getListUsers, Users } from "@/services/users/userService";
+import {
+  columns,
+  getUsers,
+  Users
+} from "@/services/users/userService";
 import {
   getWorkloadTypes,
   WorkloadTypeItem,
@@ -39,6 +43,7 @@ import {
   useState,
 } from "react";
 
+import { getAllUnits, UnitItem } from "@/services/units/unitsService";
 import {
   deleteFiles,
   FileItem,
@@ -72,6 +77,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [moTa, setMoTa] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<Users[]>([]);
   const [filteredUsersTemp, setFilteredUsersTemp] = useState<Users[]>([]);
+  const [filteredUnits, setFilteredUnits] = useState<UnitItem[]>([]);
   const [tableUsers, setTableUsers] = useState<ActivityInput[]>([]);
   const [inputSearch, setInputSearch] = useState<string>("");
   const [selectedKey, setSelectedKey] = useState<Key | null>(null);
@@ -89,9 +95,15 @@ const FormActivity: React.FC<FormActivityProps> = ({
     setWorkloadTypes(response.items);
   };
 
-  const getAllUsers = async () => {
-    const response = await getListUsers();
+  const getAllUsers = async (code: string) => {
+    const response = await getUsers(code);
     setFilteredUsersTemp(response.items);
+    console.log("response.items :>> ", response.items);
+  };
+
+  const getAllListUnits = async () => {
+    const response = await getAllUnits();
+    setFilteredUnits(response.items);
     // console.log("response.items :>> ", response.items);
   };
 
@@ -160,8 +172,15 @@ const FormActivity: React.FC<FormActivityProps> = ({
 
   useEffect(() => {
     getAllWorkloadTypes();
-    getAllUsers();
+    getAllListUnits();
   }, []);
+
+  const onSelectionUnitChange = async (key: Key | null) => {
+    console.log("key :>> ", key);
+    if (key) {
+      getAllUsers(key.toString());
+    }
+  };
 
   const onSelectionChange = (key: Key | null) => {
     setSelectedKey(key);
@@ -444,14 +463,31 @@ const FormActivity: React.FC<FormActivityProps> = ({
           />
         </div>
         <div className="flex flex-col gap-3 mb-3">
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 gap-6">
+            <Autocomplete
+              defaultItems={filteredUnits}
+              label="Đơn vị"
+              labelPlacement="outside"
+              variant="faded"
+              placeholder=" "
+              onSelectionChange={onSelectionUnitChange}
+              startContent={<Icon name="bx-search" size="20px" />}
+              listboxProps={{
+                emptyContent: "Vui lòng nhập đơn vị phù hợp!",
+              }}
+            >
+              {filteredUnits.map((unit) => (
+                <AutocompleteItem key={unit.id} textValue={unit.name}>
+                  {unit.name}
+                </AutocompleteItem>
+              ))}
+            </Autocomplete>
             <Autocomplete
               defaultItems={filteredUsers}
               label="Tra cứu CB-GV-NV"
               labelPlacement="outside"
               variant="faded"
               placeholder=" "
-              className="col-span-2"
               onSelectionChange={onSelectionChange}
               onInputChange={onInputChange}
               startContent={<Icon name="bx-search" size="20px" />}
@@ -478,62 +514,19 @@ const FormActivity: React.FC<FormActivityProps> = ({
                 </AutocompleteItem>
               ))}
             </Autocomplete>
-            <Input
-              key={"sotietchuan"}
-              type="number"
-              label="Số tiết chuẩn"
-              variant="faded"
-              labelPlacement="outside"
-              placeholder=" "
-              value={standardValues.toString()}
-              onChange={(e) => setStandardValues(Number(e.target.value))}
-            />
-            <div className="flex justify-end items-end">
-              <Button
-                color="primary"
-                className="w-full"
-                startContent={<Icon name="bx-plus" size="20px" />}
-                onClick={() => onAddUsers(selectedKey, standardValues)}
-              >
-                Thêm nhân viên
-              </Button>
-            </div>
           </div>
         </div>
-        {tableUsers && tableUsers.length > 0 && (
-          <>
-            <div className="flex flex-col gap-3 mb-3">
-              <h1>Danh sách các thành viên tham gia</h1>
-              <Table removeWrapper aria-label="Danh sách nhân viên tham gia">
-                <TableHeader columns={headerColumns}>
-                  {(column) => (
-                    <TableColumn
-                      key={column.uid}
-                      align={
-                        column.uid === "standard" || column.uid == "actions"
-                          ? "center"
-                          : "start"
-                      }
-                      className="max-w-14"
-                    >
-                      {column.name}
-                    </TableColumn>
-                  )}
-                </TableHeader>
-                <TableBody items={tableUsers}>
-                  {(item) => (
-                    <TableRow key={item.id}>
-                      {(columnKey) => (
-                        <TableCell>{renderCell(item, columnKey)}</TableCell>
-                      )}
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </>
-        )}
         <div className="grid grid-cols-4 gap-6 mb-3">
+          <Input
+            key={"sotietchuan"}
+            type="number"
+            label="Số tiết chuẩn"
+            variant="faded"
+            labelPlacement="outside"
+            placeholder=" "
+            value={standardValues.toString()}
+            onChange={(e) => setStandardValues(Number(e.target.value))}
+          />
           <DatePicker
             showMonthAndYearPickers
             key="ngaynhaphdd"
@@ -577,7 +570,50 @@ const FormActivity: React.FC<FormActivityProps> = ({
               mainWrapper: "h-10",
             }}
           />
+          <div className="flex justify-end items-end">
+            <Button
+              color="primary"
+              className="w-full"
+              startContent={<Icon name="bx-plus" size="20px" />}
+              onClick={() => onAddUsers(selectedKey, standardValues)}
+            >
+              Thêm nhân viên
+            </Button>
+          </div>
         </div>
+        {tableUsers && tableUsers.length > 0 && (
+          <>
+            <div className="flex flex-col gap-3 mb-3">
+              <h1>Danh sách các thành viên tham gia</h1>
+              <Table removeWrapper aria-label="Danh sách nhân viên tham gia">
+                <TableHeader columns={headerColumns}>
+                  {(column) => (
+                    <TableColumn
+                      key={column.uid}
+                      align={
+                        column.uid === "standard" || column.uid == "actions"
+                          ? "center"
+                          : "start"
+                      }
+                      className="max-w-14"
+                    >
+                      {column.name}
+                    </TableColumn>
+                  )}
+                </TableHeader>
+                <TableBody items={tableUsers}>
+                  {(item) => (
+                    <TableRow key={item.id}>
+                      {(columnKey) => (
+                        <TableCell>{renderCell(item, columnKey)}</TableCell>
+                      )}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        )}
         {/* Upload file */}
         <div className="grid grid-rows-1 gap-2 mb-3">
           <p className="text-[14px]">Tải lên minh chứng</p>
