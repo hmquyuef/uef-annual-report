@@ -63,9 +63,9 @@ export interface ActivitiesResponse {
 
 export const columns = [
     { uid: "stt", label: "STT"},
-    { uid: "workloadTypeName", label: "Thuộc loại biểu mẫu" },
-    { uid: "name", label: "Tên hoạt động", sortable: true },
-    { uid: "attendance", label: "Thời gian tham dự" },
+    { uid: "workloadTypeName", label: "Loại biểu mẫu" },
+    { uid: "name", label: "Tên hoạt động đã thực hiện"},
+    { uid: "attendance", label: "Ngày ký" },
     { uid: "determination", label: "Minh chứng" },
     { uid: "number", label: "Số VBHC" },
     { uid: "determinationsTime", label: "Thời gian nhập"},

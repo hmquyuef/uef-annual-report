@@ -36,6 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/react";
+import { col } from "framer-motion/client";
 
 import { Key, useCallback, useEffect, useMemo, useState } from "react";
 
@@ -170,14 +171,18 @@ const Forms = () => {
                 e.stopPropagation();
                 handleEdit(activity);
               }}
-              className="cursor-pointer text-blue-500 font-medium"
+              className="cursor-pointer text-blue-500 font-medium text-start"
             >
               {activity.name}
             </p>
           </>
         );
       case "workloadTypeName":
-        return <h1>{activity.workloadTypeName}</h1>;
+        return (
+          <div className="text-start">
+            <h1>{activity.workloadTypeName}</h1>
+          </div>
+        );
       case "determinationsTime":
         return (
           <>
@@ -560,6 +565,8 @@ const Forms = () => {
               key={column.uid}
               align={
                 column.uid === "stt" ||
+                column.uid === "workloadTypeName" ||
+                column.uid === "name" ||
                 column.uid === "determination" ||
                 column.uid === "determinationsTime" ||
                 column.uid === "number" ||
@@ -567,7 +574,6 @@ const Forms = () => {
                   ? "center"
                   : "start"
               }
-              allowsSorting={column.sortable}
             >
               {column.label.toUpperCase()}
             </TableColumn>
@@ -580,7 +586,7 @@ const Forms = () => {
           items={sortedItems}
         >
           {(item: ActivityItem) => (
-            <TableRow key={item.id}>
+            <TableRow key={item.id} className="border-b-1">
               {(columnKey) => (
                 <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}
