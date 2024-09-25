@@ -98,7 +98,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const getAllUsers = async (code: string) => {
     const response = await getUsers(code);
     setFilteredUsersTemp(response.items);
-    console.log("response.items :>> ", response.items);
+    // console.log("response.items :>> ", response.items);
   };
 
   const getAllListUnits = async () => {
@@ -176,7 +176,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   }, []);
 
   const onSelectionUnitChange = async (key: Key | null) => {
-    console.log("key :>> ", key);
+    // console.log("key :>> ", key);
     if (key) {
       getAllUsers(key.toString());
     }
