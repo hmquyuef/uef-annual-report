@@ -60,7 +60,7 @@ export async function getListUsers(): Promise<UsersResponse> {
 }
 
 export async function getUsers(code: string): Promise<UsersResponse> {
-    const response = await apiClient.get<UsersResponse>(`api/users?PageSizes=200&Filters=${code}`);
+    const response = await apiClient.get<UsersResponse>(`api/users?PageSizes=500&Filters=${code}`);
     return response.data;
 }
 
