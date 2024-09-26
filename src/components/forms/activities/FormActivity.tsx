@@ -7,8 +7,9 @@ import {
 } from "@/services/forms/formService";
 import {
   columns,
-  getUsers,
-  Users
+  getUsersFromHRMbyId,
+  UsersFromHRM,
+  UsersFromHRMResponse
 } from "@/services/users/userService";
 import {
   getWorkloadTypes,
@@ -19,6 +20,7 @@ import {
   AutocompleteItem,
   Avatar,
   Button,
+  DateInput,
   DatePicker,
   Image,
   Input,
@@ -43,7 +45,7 @@ import {
   useState,
 } from "react";
 
-import { getAllUnits, UnitItem } from "@/services/units/unitsService";
+import { getListUnitsFromHrm, UnitsHRMResponse } from "@/services/units/unitsService";
 import {
   deleteFiles,
   FileItem,
@@ -51,6 +53,7 @@ import {
 } from "@/services/uploads/uploadService";
 import { convertTimestampToYYYYMMDD } from "@/ultils/Utility";
 import { DateValue, parseDate } from "@internationalized/date";
+import { I18nProvider } from "@react-aria/i18n";
 import { useDropzone } from "react-dropzone";
 
 interface FormActivityProps {
@@ -75,9 +78,13 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [deterFromDate, setDeterFromDate] = useState<number | 0>(0);
   const [deterEntryDate, setDeterEntryDate] = useState<number | 0>(0);
   const [moTa, setMoTa] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState<Users[]>([]);
-  const [filteredUsersTemp, setFilteredUsersTemp] = useState<Users[]>([]);
-  const [filteredUnits, setFilteredUnits] = useState<UnitItem[]>([]);
+  // const [filteredUsers, setFilteredUsers] = useState<Users[]>([]);
+  const [filteredUsersFromHRM, setFilteredUsersFromHRM] = useState<UsersFromHRM[]>([]);
+  // const [filteredUsersTemp, setFilteredUsersTemp] = useState<Users[]>([]);
+  const [filteredUsersFromHRMTemp, setFilteredUsersFromHRMTemp] =
+    useState<UsersFromHRMResponse|null>(null);
+  // const [filteredUnits, setFilteredUnits] = useState<UnitItem[]>([]);
+  const [filteredUnitsHRM, setFilteredUnitsHRM] = useState<UnitsHRMResponse|undefined>(undefined);
   const [tableUsers, setTableUsers] = useState<ActivityInput[]>([]);
   const [inputSearch, setInputSearch] = useState<string>("");
   const [selectedKey, setSelectedKey] = useState<Key | null>(null);
@@ -95,23 +102,44 @@ const FormActivity: React.FC<FormActivityProps> = ({
     setWorkloadTypes(response.items);
   };
 
-  const getAllUsers = async (code: string) => {
-    const response = await getUsers(code);
-    setFilteredUsersTemp(response.items);
+  // const getAllUsers = async (code: string) => {
+  //   const response = await getUsers(code);
+  //   setFilteredUsersTemp(response.items);
+  //   // console.log("response.items :>> ", response.items);
+  // };
+
+  const getAllUsersFromHRM = async (id: string) => {
+    const response = await getUsersFromHRMbyId(id);
+    setFilteredUsersFromHRMTemp(response);
     // console.log("response.items :>> ", response.items);
   };
 
   const getAllListUnits = async () => {
-    const response = await getAllUnits();
-    setFilteredUnits(response.items);
-    // console.log("response.items :>> ", response.items);
+    // const response = await getAllUnits();
+    const response = await getListUnitsFromHrm();
+    setFilteredUnitsHRM(response);
   };
 
   const onAddUsers = (key: Key | null, standard: number | 0) => {
-    const itemUser = filteredUsers.find((user) => user.id === key);
+    const itemUser = filteredUsersFromHRMTemp?.model?.find((user) => user.nhanVienGuid === key) ?? null;
     if (itemUser) {
-      itemUser.standardNumber = standard;
-      setTableUsers((prevTableUsers) => [...prevTableUsers, itemUser]);
+      // itemUser.standardNumber = standard;
+      setTableUsers((prevTableUsers) => {
+        const updatedUsers = prevTableUsers.map((user) => {
+          if (user.id === itemUser.nhanVienGuid) {
+            return { ...user, standardNumber: standard };
+          }
+          return user;
+        });
+        const newUser: ActivityInput = {
+          id: itemUser.nhanVienGuid,
+          userName: itemUser.nhanVienID,
+          fullName: `${itemUser.ho} ${itemUser.tenLot} ${itemUser.ten}`,
+          unitName: itemUser.donViName.toString(),
+          standardNumber: standard,
+        };
+        return [...updatedUsers, newUser];
+      });
       setStandardValues(0);
       setSelectedKey(null);
     }
@@ -178,7 +206,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const onSelectionUnitChange = async (key: Key | null) => {
     // console.log("key :>> ", key);
     if (key) {
-      getAllUsers(key.toString());
+      getAllUsersFromHRM(key.toString());
     }
   };
 
@@ -194,17 +222,19 @@ const FormActivity: React.FC<FormActivityProps> = ({
   useEffect(() => {
     if (inputSearch) {
       try {
-        const filtered = filteredUsersTemp.filter(
-          (user) =>
-            user.fullName.toLowerCase().includes(inputSearch.toLowerCase()) ||
-            user.userName.toLowerCase().includes(inputSearch.toLowerCase())
+        const filtered = filteredUsersFromHRMTemp?.model?.filter(
+          (user : UsersFromHRM) =>
+            user.nhanVienID.toLowerCase().includes(inputSearch.toLowerCase()) ||
+            user.ho.toLowerCase().includes(inputSearch.toLowerCase()) ||
+            user.tenLot.toLowerCase().includes(inputSearch.toLowerCase()) ||
+            user.ten.toLowerCase().includes(inputSearch.toLowerCase())
         );
-        setFilteredUsers(filtered);
+        setFilteredUsersFromHRM(filtered ?? []);
       } catch (error) {
-        setFilteredUsers([]);
+        setFilteredUsersFromHRM([]);
       }
     }
-  }, [inputSearch, filteredUsersTemp]);
+  }, [inputSearch, filteredUsersFromHRMTemp]);
 
   // Populate form data in edit mode
   useEffect(() => {
@@ -433,39 +463,38 @@ const FormActivity: React.FC<FormActivityProps> = ({
             onChange={(e) => setDeterNumber(e.target.value)}
             onClear={() => setDeterNumber("")}
           />
-
-          <DatePicker
-            showMonthAndYearPickers
-            key="ngayky"
-            label="Ngày ký"
-            variant="faded"
-            granularity="day"
-            aria-placeholder={"dd/mm/yyyy"}
-            labelPlacement="outside"
-            value={
-              deterFromDate != 0
-                ? (() => {
-                    try {
-                      return parseDate(
-                        convertTimestampToYYYYMMDD(deterFromDate)
-                      );
-                    } catch (error) {
-                      console.error(
-                        "Error converting timestamp to YYYYMMDD:",
-                        error
-                      );
-                      return undefined;
-                    }
-                  })()
-                : undefined
-            }
-            onChange={handleDeterFromDateChange}
-          />
+          <I18nProvider locale="fr-FR">
+            <DateInput
+              key="ngayky"
+              label="Ngày ký"
+              variant="faded"
+              granularity="day"
+              labelPlacement="outside"
+              value={
+                deterFromDate != 0
+                  ? (() => {
+                      try {
+                        return parseDate(
+                          convertTimestampToYYYYMMDD(deterFromDate)
+                        );
+                      } catch (error) {
+                        console.error(
+                          "Error converting timestamp to YYYYMMDD:",
+                          error
+                        );
+                        return undefined;
+                      }
+                    })()
+                  : undefined
+              }
+              onChange={handleDeterFromDateChange}
+            />
+          </I18nProvider>
         </div>
         <div className="flex flex-col gap-3 mb-3">
           <div className="grid grid-cols-2 gap-6">
             <Autocomplete
-              defaultItems={filteredUnits}
+              defaultItems={filteredUnitsHRM?.model}
               label="Đơn vị"
               labelPlacement="outside"
               variant="faded"
@@ -476,14 +505,14 @@ const FormActivity: React.FC<FormActivityProps> = ({
                 emptyContent: "Vui lòng nhập đơn vị phù hợp!",
               }}
             >
-              {filteredUnits.map((unit) => (
+              {filteredUnitsHRM?.model?.map((unit) => (
                 <AutocompleteItem key={unit.id} textValue={unit.name}>
                   {unit.name}
                 </AutocompleteItem>
-              ))}
+              )) ?? []}
             </Autocomplete>
             <Autocomplete
-              defaultItems={filteredUsers}
+              defaultItems={filteredUsersFromHRM}
               label="Tra cứu CB-GV-NV"
               labelPlacement="outside"
               variant="faded"
@@ -495,24 +524,24 @@ const FormActivity: React.FC<FormActivityProps> = ({
                 emptyContent: "Vui lòng nhập mã nhân viên phù hợp!",
               }}
             >
-              {filteredUsers.map((user) => (
-                <AutocompleteItem key={user.id} textValue={user.fullName}>
+              {filteredUsersFromHRM?.map((user) => (
+                <AutocompleteItem key={user.nhanVienGuid} textValue={user.nhanVienID}>
                   <div className="flex gap-2 items-center">
                     <Avatar
-                      alt={user.userName}
+                      alt={user.nhanVienID}
                       className="flex-shrink-0"
                       size="sm"
                       src="avatar.jpg"
                     />
                     <div className="flex flex-col">
-                      <span className="text-small">{user.fullName}</span>
+                      <span className="text-small">{user.ho} {user.tenLot} {user.ten}</span>
                       <span className="text-tiny text-default-400">
-                        {user.userName}
+                        {user.nhanVienID}
                       </span>
                     </div>
                   </div>
                 </AutocompleteItem>
-              ))}
+              )) ?? null}
             </Autocomplete>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import apiClient from "../apiClient";
+// import apiClientFomHRM from "../apiClientFomHRM";
 
 export const columns = [
     { name: "ID", uid: "id"},
@@ -26,6 +27,16 @@ export interface Users {
     isActived: boolean;
 }
 
+export interface UsersFromHRM {
+    nhanVienGuid: string;
+    nhanVienID: string;
+    ho: string;
+    tenLot: string;
+    ten: string;
+    donViID: number;
+    donViName: number;
+}
+
 export interface UserActivity{
     id: string;
     userName: string;
@@ -49,6 +60,10 @@ export interface UsersResponse {
     totalCount: number;
 }
 
+export interface UsersFromHRMResponse {
+    model: UsersFromHRM[];
+}
+
 export interface UsersACtivitiesResponse {
     items: UserActivity[];
     totalCount: number;
@@ -61,6 +76,11 @@ export async function getListUsers(): Promise<UsersResponse> {
 
 export async function getUsers(code: string): Promise<UsersResponse> {
     const response = await apiClient.get<UsersResponse>(`api/users?PageSizes=500&Filters=${code}`);
+    return response.data;
+}
+
+export async function getUsersFromHRMbyId(id: string): Promise<UsersFromHRMResponse> {
+    const response = await apiClient.get<UsersFromHRMResponse>(`api/users/hrm/${id}`);
     return response.data;
 }
 

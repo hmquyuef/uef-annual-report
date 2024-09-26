@@ -2,7 +2,7 @@
 const nextConfig = {
     reactStrictMode: false,
     images: {
-      domains: ['api-annual.uef.edu.vn'],
+      domains: ['api-annual.uef.edu.vn', 'portal.uef.edu.vn'],
       remotePatterns: [
         {
           protocol: 'https',
