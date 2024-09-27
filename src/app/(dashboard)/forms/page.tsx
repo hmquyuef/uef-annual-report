@@ -37,7 +37,10 @@ import {
   TableRow,
 } from "@nextui-org/react";
 
+import { getDataExportById } from "@/services/exports/exportService";
+import { saveAs } from "file-saver";
 import { Key, useCallback, useEffect, useMemo, useState } from "react";
+import * as XLSX from "xlsx";
 
 const Forms = () => {
   type Activities = (typeof activities)[0];
@@ -340,6 +343,99 @@ const Forms = () => {
     []
   );
 
+  const handleExportExcel = useCallback(async () => {
+    const results = await getDataExportById(
+      "b46ee628-bfe3-4d27-a10b-9d0c47145613"
+    );
+    const defaultInfo = [
+      ["", "", "", "", "", "", "", "", "BM-05"],
+      [
+        "TRƯỜNG ĐẠI HỌC KINH TẾ - TÀI CHÍNH",
+        "",
+        "",
+        "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+      ],
+      ["THÀNH PHỐ HỒ CHÍ MÌNH", "", "", "Độc lập - Tự do - Hạnh phúc"],
+      [`${results.unitName}`],
+      ["TỔNG HỢP DANH SÁCH"],
+      [
+        "Tham gia Ban tổ chức các hoạt động báo cáo chuyên đề, Hội thảo khoa học; Các cuộc thi học thuật; Hướng dẫn/hỗ trợ sinh viên tham gia các cuộc thi, … được BĐH phê duyệt tiết chuẩn",
+      ],
+      [""], // Dòng 9 để trống
+    ];
+
+    const dataArray = [
+      [
+        "STT",
+        "Mã số CBGVNV",
+        "Họ và chữ lót",
+        "Tên",
+        "Đơn vị",
+        "Tên hoạt động đã thực hiện",
+        "Số tiết chuẩn được BGH phê duyệt",
+        "Minh chứng",
+        "Ghi chú",
+      ], // Tên cột ở dòng 10
+      ...results.data.map((item) => [
+        item.stt,
+        item.userName,
+        item.middleName,
+        item.firstName,
+        item.faculityName,
+        item.activityName,
+        item.standNumber,
+        item.determination,
+        item.note,
+      ]),
+    ];
+    const combinedData = [...defaultInfo, ...dataArray];
+    const worksheet = XLSX.utils.aoa_to_sheet(combinedData);
+    //thêm định dạng cho các ô
+    const boldCenterStyle = {
+      font: { bold: true },
+      alignment: { horizontal: "center", vertical: "center" },
+    };
+
+    const range = XLSX.utils.decode_range(worksheet["!ref"]!);
+    // Áp dụng border cho tất cả các ô còn lại (có thể thêm các định dạng khác nếu muốn)
+    for (let row = 7; row <= range.e.r; row++) {
+      for (let col = 0; col <= range.e.c; col++) {
+        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+        if (worksheet[cellRef]) worksheet[cellRef].s = boldCenterStyle;
+      }
+    }
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    // Thiết lập cấu hình trang
+    if (!worksheet["!margins"]) {
+      worksheet["!margins"] = {
+        left: 0.5,
+        right: 0.5,
+        top: 0.5,
+        bottom: 0.5,
+        header: 0.3,
+        footer: 0.3,
+      };
+    }
+    // Thiết lập khổ giấy A4 và in nhiều trang
+    if (!worksheet["!pageSetup"]) {
+      worksheet["!pageSetup"] = {
+        paperSize: 9, // Khổ A4
+        orientation: "portrait", // Hướng giấy dọc
+        fitToWidth: 1, // Đảm bảo vừa chiều ngang
+        fitToHeight: 0, // Cho phép in nhiều trang nếu không vừa chiều dọc
+      };
+    }
+    // Xuất file Excel
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "data.xlsx");
+  }, []);
+
   const topContent = useMemo(() => {
     return (
       <div className="w-full flex flex-col justify-between items-center gap-3">
@@ -355,6 +451,14 @@ const Forms = () => {
             color="primary"
           />
           <div className="flex gap-3">
+            <Button
+              color="success"
+              onClick={handleExportExcel}
+              className="text-white"
+              startContent={<Icon name="bx-file" size="20px" />}
+            >
+              Xuất Excel
+            </Button>
             <Button
               color="primary"
               onClick={() => setIsOpen(true)}
@@ -373,33 +477,6 @@ const Forms = () => {
               Xóa
             </Button>
           </div>
-          {/* <div className="grid grid-cols-2 gap-3"> */}
-          {/* <Dropdown placement="bottom-start">
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<Icon name="bx-chevron-down" />}
-                  variant="flat"
-                >
-                  Loại biểu mẫu
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={workloadTypesFilter}
-                selectionMode="multiple"
-                onSelectionChange={setWorkloadTypesFilter}
-              >
-                {workloadTypes.map((type) => (
-                  <DropdownItem key={type.id} className="capitalize">
-                    {capitalize(type.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown> */}
-
-          {/* </div> */}
         </div>
         <div className="w-full flex flex-row justify-between items-center gap-3 mb-2">
           <span className="text-default-400 text-small">
@@ -428,6 +505,7 @@ const Forms = () => {
     handleDelete,
     onClear,
     onSearchChange,
+    handleExportExcel,
   ]);
 
   const bottomContent = useMemo(() => {

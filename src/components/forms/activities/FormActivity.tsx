@@ -9,7 +9,7 @@ import {
   columns,
   getUsersFromHRMbyId,
   UsersFromHRM,
-  UsersFromHRMResponse
+  UsersFromHRMResponse,
 } from "@/services/users/userService";
 import {
   getWorkloadTypes,
@@ -20,7 +20,6 @@ import {
   AutocompleteItem,
   Avatar,
   Button,
-  DateInput,
   DatePicker,
   Image,
   Input,
@@ -45,14 +44,23 @@ import {
   useState,
 } from "react";
 
-import { getListUnitsFromHrm, UnitsHRMResponse } from "@/services/units/unitsService";
+import {
+  getListUnitsFromHrm,
+  UnitsHRMResponse,
+} from "@/services/units/unitsService";
 import {
   deleteFiles,
   FileItem,
   postFiles,
 } from "@/services/uploads/uploadService";
 import { convertTimestampToYYYYMMDD } from "@/ultils/Utility";
-import { DateValue, parseDate } from "@internationalized/date";
+import {
+  CalendarDate,
+  DateValue,
+  now,
+  parseDate,
+  toZoned,
+} from "@internationalized/date";
 import { I18nProvider } from "@react-aria/i18n";
 import { useDropzone } from "react-dropzone";
 
@@ -79,12 +87,16 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [deterEntryDate, setDeterEntryDate] = useState<number | 0>(0);
   const [moTa, setMoTa] = useState("");
   // const [filteredUsers, setFilteredUsers] = useState<Users[]>([]);
-  const [filteredUsersFromHRM, setFilteredUsersFromHRM] = useState<UsersFromHRM[]>([]);
+  const [filteredUsersFromHRM, setFilteredUsersFromHRM] = useState<
+    UsersFromHRM[]
+  >([]);
   // const [filteredUsersTemp, setFilteredUsersTemp] = useState<Users[]>([]);
   const [filteredUsersFromHRMTemp, setFilteredUsersFromHRMTemp] =
-    useState<UsersFromHRMResponse|null>(null);
+    useState<UsersFromHRMResponse | null>(null);
   // const [filteredUnits, setFilteredUnits] = useState<UnitItem[]>([]);
-  const [filteredUnitsHRM, setFilteredUnitsHRM] = useState<UnitsHRMResponse|undefined>(undefined);
+  const [filteredUnitsHRM, setFilteredUnitsHRM] = useState<
+    UnitsHRMResponse | undefined
+  >(undefined);
   const [tableUsers, setTableUsers] = useState<ActivityInput[]>([]);
   const [inputSearch, setInputSearch] = useState<string>("");
   const [selectedKey, setSelectedKey] = useState<Key | null>(null);
@@ -102,26 +114,21 @@ const FormActivity: React.FC<FormActivityProps> = ({
     setWorkloadTypes(response.items);
   };
 
-  // const getAllUsers = async (code: string) => {
-  //   const response = await getUsers(code);
-  //   setFilteredUsersTemp(response.items);
-  //   // console.log("response.items :>> ", response.items);
-  // };
-
   const getAllUsersFromHRM = async (id: string) => {
     const response = await getUsersFromHRMbyId(id);
     setFilteredUsersFromHRMTemp(response);
-    // console.log("response.items :>> ", response.items);
   };
 
   const getAllListUnits = async () => {
-    // const response = await getAllUnits();
     const response = await getListUnitsFromHrm();
     setFilteredUnitsHRM(response);
   };
 
   const onAddUsers = (key: Key | null, standard: number | 0) => {
-    const itemUser = filteredUsersFromHRMTemp?.model?.find((user) => user.nhanVienGuid === key) ?? null;
+    const itemUser =
+      filteredUsersFromHRMTemp?.model?.find(
+        (user) => user.nhanVienGuid === key
+      ) ?? null;
     if (itemUser) {
       // itemUser.standardNumber = standard;
       setTableUsers((prevTableUsers) => {
@@ -166,6 +173,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
 
   const handleDateChange = useCallback(
     (date: DateValue, setState: (value: number) => void) => {
+      console.log("date :>> ", date);
       const temp = `${date.day}/${date.month}/${date.year}`;
       const [day, month, year] = temp.split("/").map(Number);
       const convertedDate = new Date(year, month - 1, day);
@@ -215,7 +223,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   };
 
   const onInputChange = (value: string) => {
-    setInputSearch(value);
+    setInputSearch(value.trim().toLowerCase());
   };
 
   // Gọi API mỗi khi query thay đổi
@@ -223,11 +231,11 @@ const FormActivity: React.FC<FormActivityProps> = ({
     if (inputSearch) {
       try {
         const filtered = filteredUsersFromHRMTemp?.model?.filter(
-          (user : UsersFromHRM) =>
-            user.nhanVienID.toLowerCase().includes(inputSearch.toLowerCase()) ||
-            user.ho.toLowerCase().includes(inputSearch.toLowerCase()) ||
-            user.tenLot.toLowerCase().includes(inputSearch.toLowerCase()) ||
-            user.ten.toLowerCase().includes(inputSearch.toLowerCase())
+          (user: UsersFromHRM) =>
+            user.nhanVienID.toLowerCase().includes(inputSearch) ||
+            user.hoVaTenKhongDau
+              .toLowerCase()
+              .includes(inputSearch)
         );
         setFilteredUsersFromHRM(filtered ?? []);
       } catch (error) {
@@ -295,7 +303,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
                   alt={user.fullName}
                   className="flex-shrink-0"
                   size="sm"
-                  src="avatar.jpg"
+                  src="user.png"
                 />
                 <div className="flex flex-col">
                   <span className="text-small">{user.fullName}</span>
@@ -463,31 +471,39 @@ const FormActivity: React.FC<FormActivityProps> = ({
             onChange={(e) => setDeterNumber(e.target.value)}
             onClear={() => setDeterNumber("")}
           />
-          <I18nProvider locale="fr-FR">
-            <DateInput
+          <I18nProvider locale="vi-VN">
+            <DatePicker
+              shouldForceLeadingZeros
+              showMonthAndYearPickers
               key="ngayky"
               label="Ngày ký"
               variant="faded"
               granularity="day"
               labelPlacement="outside"
+              placeholderValue={now("Asia/Ho_Chi_Minh")}
               value={
-                deterFromDate != 0
+                deterFromDate !== 0
                   ? (() => {
                       try {
-                        return parseDate(
-                          convertTimestampToYYYYMMDD(deterFromDate)
-                        );
+                        const dateString =
+                          convertTimestampToYYYYMMDD(deterFromDate);
+                        const calendarDate: CalendarDate =
+                          parseDate(dateString);
+                        return toZoned(calendarDate, "Asia/Ho_Chi_Minh");
                       } catch (error) {
-                        console.error(
-                          "Error converting timestamp to YYYYMMDD:",
-                          error
-                        );
+                        console.error(error);
                         return undefined;
                       }
                     })()
                   : undefined
               }
-              onChange={handleDeterFromDateChange}
+              onChange={(date) => {
+                try {
+                  handleDeterFromDateChange(date);
+                } catch (error) {
+                  console.error("Error setting deter entry date:", error);
+                }
+              }}
             />
           </I18nProvider>
         </div>
@@ -513,7 +529,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
             </Autocomplete>
             <Autocomplete
               defaultItems={filteredUsersFromHRM}
-              label="Tra cứu CB-GV-NV"
+              label="Tra cứu mã CB-GV-NV"
               labelPlacement="outside"
               variant="faded"
               placeholder=" "
@@ -525,16 +541,21 @@ const FormActivity: React.FC<FormActivityProps> = ({
               }}
             >
               {filteredUsersFromHRM?.map((user) => (
-                <AutocompleteItem key={user.nhanVienGuid} textValue={user.nhanVienID}>
+                <AutocompleteItem
+                  key={user.nhanVienGuid}
+                  textValue={user.nhanVienID}
+                >
                   <div className="flex gap-2 items-center">
                     <Avatar
                       alt={user.nhanVienID}
                       className="flex-shrink-0"
                       size="sm"
-                      src="avatar.jpg"
+                      src="user.png"
                     />
                     <div className="flex flex-col">
-                      <span className="text-small">{user.ho} {user.tenLot} {user.ten}</span>
+                      <span className="text-small">
+                        {user.ho} {user.tenLot} {user.ten}
+                      </span>
                       <span className="text-tiny text-default-400">
                         {user.nhanVienID}
                       </span>
@@ -563,24 +584,30 @@ const FormActivity: React.FC<FormActivityProps> = ({
             variant="faded"
             granularity="day"
             labelPlacement="outside"
+            placeholderValue={now("Asia/Ho_Chi_Minh")}
+            onClick={() => console.log("Click")}
             value={
-              deterEntryDate != 0
+              deterEntryDate !== 0
                 ? (() => {
                     try {
-                      return parseDate(
-                        convertTimestampToYYYYMMDD(deterEntryDate)
-                      );
+                      const dateString =
+                        convertTimestampToYYYYMMDD(deterEntryDate);
+                      const calendarDate: CalendarDate = parseDate(dateString); // Chuyển đổi chuỗi thành CalendarDate
+                      return toZoned(calendarDate, "Asia/Ho_Chi_Minh");
                     } catch (error) {
-                      console.error(
-                        "Error converting timestamp to YYYYMMDD:",
-                        error
-                      );
+                      console.error(error);
                       return undefined;
                     }
                   })()
                 : undefined
             }
-            onChange={handleSetDeterEntryDateChange}
+            onChange={(date) => {
+              try {
+                handleSetDeterEntryDateChange(date); // Hàm xử lý khi giá trị ngày thay đổi
+              } catch (error) {
+                console.error("Error setting deter entry date:", error);
+              }
+            }}
             className="text-[14px] flex justify-end"
           />
           <Input

@@ -62,9 +62,10 @@ const Workload = () => {
     let filteredUsers = [...userActivities];
 
     if (hasSearchFilter) {
-      filteredUsers = filteredUsers.filter((user) =>
-      user.userName.toLowerCase().includes(filterValue.toLowerCase()) ||
-      user.fullName.toLowerCase().includes(filterValue.toLowerCase())
+      filteredUsers = filteredUsers.filter(
+        (user) =>
+          user.userName.toLowerCase().includes(filterValue.toLowerCase()) ||
+          user.fullName.toLowerCase().includes(filterValue.toLowerCase())
       );
     }
 
@@ -165,6 +166,9 @@ const Workload = () => {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex justify-between gap-3 items-end">
+          <Button color="success" endContent={<Icon name="bx-exclude" size="20px"/>}>
+            Xuất
+          </Button>
           <Input
             isClearable
             className="w-1/4"
@@ -327,7 +331,7 @@ const Workload = () => {
           </TableHeader>
           <TableBody
             isLoading={loading}
-            loadingContent={<Loading isOpen={loading}/>}
+            loadingContent={<Loading isOpen={loading} />}
             emptyContent={"No users found"}
             items={items}
           >

@@ -1,5 +1,7 @@
+"use client";
+
 import { NextUIProvider } from "@nextui-org/react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <NextUIProvider locale="fr-FR">{children}</NextUIProvider>;
+  return <NextUIProvider locale="vi-VN">{children}</NextUIProvider>;
 }

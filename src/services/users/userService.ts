@@ -33,6 +33,7 @@ export interface UsersFromHRM {
     ho: string;
     tenLot: string;
     ten: string;
+    hoVaTenKhongDau: string;
     donViID: number;
     donViName: number;
 }
