@@ -41,7 +41,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useState,
+  useState
 } from "react";
 
 import {
@@ -87,9 +87,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [deterEntryDate, setDeterEntryDate] = useState<number | 0>(0);
   const [moTa, setMoTa] = useState("");
   // const [filteredUsers, setFilteredUsers] = useState<Users[]>([]);
-  const [filteredUsersFromHRM, setFilteredUsersFromHRM] = useState<
-    UsersFromHRM[]
-  >([]);
+  const [filteredUsersFromHRM, setFilteredUsersFromHRM] = useState<UsersFromHRM[]>([]);
   // const [filteredUsersTemp, setFilteredUsersTemp] = useState<Users[]>([]);
   const [filteredUsersFromHRMTemp, setFilteredUsersFromHRMTemp] =
     useState<UsersFromHRMResponse | null>(null);
@@ -227,21 +225,27 @@ const FormActivity: React.FC<FormActivityProps> = ({
   };
 
   // Gọi API mỗi khi query thay đổi
+
   useEffect(() => {
-    if (inputSearch) {
-      try {
-        const filtered = filteredUsersFromHRMTemp?.model?.filter(
-          (user: UsersFromHRM) =>
-            user.nhanVienID.toLowerCase().includes(inputSearch) ||
-            user.hoVaTenKhongDau
-              .toLowerCase()
-              .includes(inputSearch)
-        );
-        setFilteredUsersFromHRM(filtered ?? []);
-      } catch (error) {
-        setFilteredUsersFromHRM([]);
+    const timeoutId = setTimeout(() => {
+      if (inputSearch) {
+        try {
+          const filtered = filteredUsersFromHRMTemp?.model?.filter(
+            (user: UsersFromHRM) =>
+              user.nhanVienID.toLowerCase().includes(inputSearch) ||
+              user.ho.toLowerCase().includes(inputSearch) ||
+              user.tenLot.toLowerCase().includes(inputSearch) ||
+              user.ten.toLowerCase().includes(inputSearch) ||
+              user.hoVaTenKhongDau.toLowerCase().includes(inputSearch)
+          );
+          setFilteredUsersFromHRM(filtered ?? []);
+        } catch (error) {
+          setFilteredUsersFromHRM([]);
+        }
       }
-    }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [inputSearch, filteredUsersFromHRMTemp]);
 
   // Populate form data in edit mode
@@ -516,7 +520,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
               variant="faded"
               placeholder=" "
               onSelectionChange={onSelectionUnitChange}
-              startContent={<Icon name="bx-search" size="20px" />}
+              startContent={<Icon name="bx-search-alt-2" size="20px" />}
               listboxProps={{
                 emptyContent: "Vui lòng nhập đơn vị phù hợp!",
               }}
@@ -535,7 +539,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
               placeholder=" "
               onSelectionChange={onSelectionChange}
               onInputChange={onInputChange}
-              startContent={<Icon name="bx-search" size="20px" />}
+              startContent={<Icon name="bx-search-alt-2" size="20px" />}
               listboxProps={{
                 emptyContent: "Vui lòng nhập mã nhân viên phù hợp!",
               }}

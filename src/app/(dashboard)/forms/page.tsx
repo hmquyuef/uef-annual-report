@@ -516,38 +516,34 @@ const Forms = () => {
             ? "All items selected"
             : `${selectedKeys.size} of ${filteredItems.length} selected`}
         </span>
-        {page !== 1 && (
-          <>
-            <Pagination
-              isCompact
-              showControls
-              showShadow
-              initialPage={1}
-              color="primary"
-              page={page}
-              total={pages}
-              onChange={setPage}
-            />
-            <div className="hidden sm:flex w-[30%] justify-end gap-2">
-              <Button
-                isDisabled={pages === 1}
-                size="sm"
-                variant="flat"
-                onPress={onPreviousPage}
-              >
-                Trang trước
-              </Button>
-              <Button
-                isDisabled={pages === 1}
-                size="sm"
-                variant="flat"
-                onPress={onNextPage}
-              >
-                Trang sau
-              </Button>
-            </div>
-          </>
-        )}
+        <Pagination
+          isCompact
+          showControls
+          showShadow
+          initialPage={1}
+          color="primary"
+          page={page}
+          total={pages}
+          onChange={setPage}
+        />
+        <div className="hidden sm:flex w-[30%] justify-end gap-2">
+          <Button
+            isDisabled={pages === 1}
+            size="sm"
+            variant="flat"
+            onPress={onPreviousPage}
+          >
+            Trang trước
+          </Button>
+          <Button
+            isDisabled={pages === 1}
+            size="sm"
+            variant="flat"
+            onPress={onNextPage}
+          >
+            Trang sau
+          </Button>
+        </div>
       </div>
     );
   }, [
