@@ -28,16 +28,16 @@ export interface Users {
 }
 
 export interface UsersFromHRM {
-    nhanVienGuid: string;
-    nhanVienID: string;
-    ho: string;
-    tenLot: string;
-    ten: string;
-    hoVaTenKhongDau: string;
-    donViID: number;
-    donViName: number;
+    id: string;
+    userName: string;
+    lastName: string;
+    middleName: string;
+    firstName: string;
+    fullName: string;
+    fullNameUnsigned: string;
+    unitId: string;
+    unitName: string;
 }
-
 export interface UserActivity{
     id: string;
     userName: string;
@@ -62,7 +62,7 @@ export interface UsersResponse {
 }
 
 export interface UsersFromHRMResponse {
-    model: UsersFromHRM[];
+    items: UsersFromHRM[];
 }
 
 export interface UsersACtivitiesResponse {

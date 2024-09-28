@@ -26,6 +26,7 @@ import {
   Button,
   Chip,
   Input,
+  Link,
   Pagination,
   Selection,
   SortDescriptor,
@@ -34,7 +35,7 @@ import {
   TableCell,
   TableColumn,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@nextui-org/react";
 
 import { getDataExportById } from "@/services/exports/exportService";
@@ -211,7 +212,20 @@ const Forms = () => {
             {activity.determinations.file.path !== undefined &&
             activity.determinations.file.path !== "" ? (
               <>
-                <Icon name="bx-check" size="20px" className="text-green-600" />
+                <Link
+                  href={`${
+                    "https://api-annual.uef.edu.vn/" +
+                    activity.determinations.file.path
+                  }`}
+                  target="__blank"
+                  size="sm"
+                >
+                  <Icon
+                    name="bx-check"
+                    size="20px"
+                    className="text-green-600"
+                  />
+                </Link>
               </>
             ) : (
               <></>

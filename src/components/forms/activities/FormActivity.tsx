@@ -23,6 +23,7 @@ import {
   DatePicker,
   Image,
   Input,
+  Link,
   Select,
   Selection,
   SelectItem,
@@ -41,7 +42,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useState
+  useState,
 } from "react";
 
 import {
@@ -87,7 +88,9 @@ const FormActivity: React.FC<FormActivityProps> = ({
   const [deterEntryDate, setDeterEntryDate] = useState<number | 0>(0);
   const [moTa, setMoTa] = useState("");
   // const [filteredUsers, setFilteredUsers] = useState<Users[]>([]);
-  const [filteredUsersFromHRM, setFilteredUsersFromHRM] = useState<UsersFromHRM[]>([]);
+  const [filteredUsersFromHRM, setFilteredUsersFromHRM] = useState<
+    UsersFromHRM[]
+  >([]);
   // const [filteredUsersTemp, setFilteredUsersTemp] = useState<Users[]>([]);
   const [filteredUsersFromHRMTemp, setFilteredUsersFromHRMTemp] =
     useState<UsersFromHRMResponse | null>(null);
@@ -124,23 +127,21 @@ const FormActivity: React.FC<FormActivityProps> = ({
 
   const onAddUsers = (key: Key | null, standard: number | 0) => {
     const itemUser =
-      filteredUsersFromHRMTemp?.model?.find(
-        (user) => user.nhanVienGuid === key
-      ) ?? null;
+      filteredUsersFromHRMTemp?.items?.find((user) => user.id === key) ?? null;
     if (itemUser) {
       // itemUser.standardNumber = standard;
       setTableUsers((prevTableUsers) => {
         const updatedUsers = prevTableUsers.map((user) => {
-          if (user.id === itemUser.nhanVienGuid) {
+          if (user.id === itemUser.id) {
             return { ...user, standardNumber: standard };
           }
           return user;
         });
         const newUser: ActivityInput = {
-          id: itemUser.nhanVienGuid,
-          userName: itemUser.nhanVienID,
-          fullName: `${itemUser.ho} ${itemUser.tenLot} ${itemUser.ten}`,
-          unitName: itemUser.donViName.toString(),
+          id: itemUser.id,
+          userName: itemUser.userName,
+          fullName: itemUser.fullName,
+          unitName: itemUser.unitName,
           standardNumber: standard,
         };
         return [...updatedUsers, newUser];
@@ -171,7 +172,6 @@ const FormActivity: React.FC<FormActivityProps> = ({
 
   const handleDateChange = useCallback(
     (date: DateValue, setState: (value: number) => void) => {
-      console.log("date :>> ", date);
       const temp = `${date.day}/${date.month}/${date.year}`;
       const [day, month, year] = temp.split("/").map(Number);
       const convertedDate = new Date(year, month - 1, day);
@@ -221,31 +221,23 @@ const FormActivity: React.FC<FormActivityProps> = ({
   };
 
   const onInputChange = (value: string) => {
-    setInputSearch(value.trim().toLowerCase());
+    setInputSearch(value.trim().toUpperCase());
   };
 
   // Gọi API mỗi khi query thay đổi
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (inputSearch) {
-        try {
-          const filtered = filteredUsersFromHRMTemp?.model?.filter(
-            (user: UsersFromHRM) =>
-              user.nhanVienID.toLowerCase().includes(inputSearch) ||
-              user.ho.toLowerCase().includes(inputSearch) ||
-              user.tenLot.toLowerCase().includes(inputSearch) ||
-              user.ten.toLowerCase().includes(inputSearch) ||
-              user.hoVaTenKhongDau.toLowerCase().includes(inputSearch)
-          );
-          setFilteredUsersFromHRM(filtered ?? []);
-        } catch (error) {
-          setFilteredUsersFromHRM([]);
-        }
-      }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
+    try {
+      const filtered = filteredUsersFromHRMTemp?.items?.filter(
+        (user: UsersFromHRM) =>
+          user.userName.toUpperCase().includes(inputSearch) ||
+          user.fullName.toUpperCase().includes(inputSearch) ||
+          user.fullNameUnsigned.toUpperCase().includes(inputSearch)
+      );
+      setFilteredUsersFromHRM(filtered ?? []);
+    } catch (error) {
+      setFilteredUsersFromHRM([]);
+    }
   }, [inputSearch, filteredUsersFromHRMTemp]);
 
   // Populate form data in edit mode
@@ -546,22 +538,20 @@ const FormActivity: React.FC<FormActivityProps> = ({
             >
               {filteredUsersFromHRM?.map((user) => (
                 <AutocompleteItem
-                  key={user.nhanVienGuid}
-                  textValue={user.nhanVienID}
+                  key={user.id}
+                  textValue={`${user.fullName} - ${user.userName}`}
                 >
                   <div className="flex gap-2 items-center">
                     <Avatar
-                      alt={user.nhanVienID}
+                      alt={user.userName}
                       className="flex-shrink-0"
                       size="sm"
                       src="user.png"
                     />
                     <div className="flex flex-col">
-                      <span className="text-small">
-                        {user.ho} {user.tenLot} {user.ten}
-                      </span>
+                      <span className="text-small">{user.fullName}</span>
                       <span className="text-tiny text-default-400">
-                        {user.nhanVienID}
+                        {user.userName}
                       </span>
                     </div>
                   </div>
@@ -717,8 +707,19 @@ const FormActivity: React.FC<FormActivityProps> = ({
                           />
                           <div className="col-span-2 text-center content-center">
                             <p className="text-sm">{listPicture[0].name}</p>
-                            <p className="text-sm">
-                              ({(item.size / (1024 * 1024)).toFixed(2)} MB)
+                            <p className="text-sm flex">
+                              ({(item.size / (1024 * 1024)).toFixed(2)} MB -
+                              <Link
+                                href={`${
+                                  "https://api-annual.uef.edu.vn/" +
+                                  listPicture[0].path
+                                }`}
+                                target="__blank"
+                                size="sm"
+                              >
+                                <p className="text-sm ms-1">xem chi tiết</p>
+                              </Link>
+                              )
                             </p>
                           </div>
                         </div>
