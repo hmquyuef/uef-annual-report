@@ -452,6 +452,22 @@ const Forms = () => {
       const combinedData = [...defaultInfo, ...dataArray];
       const combinedFooterData = [...combinedData, ...defaultFooterInfo];
       const worksheet = XLSX.utils.aoa_to_sheet(combinedFooterData);
+      worksheet["!pageSetup"] = {
+        paperSize: 9,
+        orientation: "landscape",
+        scale: 100,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        fitToPage: true,
+      };
+      worksheet["!margins"] = {
+        left: 0.1,
+        right: 0.1,
+        top: 0.1,
+        bottom: 0.1,
+        header: 0,
+        footer: 0,
+      };
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
       // Thiết lập chiều cao của hàng 6 (ô đã merge) thành 40 pixel
@@ -459,8 +475,9 @@ const Forms = () => {
       worksheet["!rows"][5] = { hpx: 40 }; // Chiều cao hàng thứ 6 là 40 pixel
       worksheet["!cols"] = [];
       worksheet["!cols"][0] = { wch: 4 };
-      worksheet["!cols"][1] = { wch: 18 };
+      worksheet["!cols"][1] = { wch: 20 };
       worksheet["!cols"][2] = { wch: 20 };
+      worksheet["!cols"][4] = { wch: 13 };
       worksheet["M1"].s = {
         fill: {
           fgColor: { rgb: "FFFF00" },
@@ -580,7 +597,10 @@ const Forms = () => {
               font: {
                 name: "Times New Roman",
                 sz: 11,
-                bold: row === 7 ? true : false,
+                bold:
+                  row === 7 || col === 1 || col === 2 || col === 3 || col === 4
+                    ? true
+                    : false,
               },
               alignment: {
                 wrapText: true,
@@ -590,7 +610,7 @@ const Forms = () => {
                   (col === 1 ||
                     col === 2 ||
                     col === 3 ||
-                    col === 5 ||
+                    col === 4 ||
                     col === 5)
                     ? "left"
                     : "center",
@@ -652,6 +672,8 @@ const Forms = () => {
       });
       worksheet[`${cellNote}`].s = {
         font: {
+          name: "Times New Roman",
+          sz: 11,
           bold: true,
         },
       };
@@ -678,7 +700,6 @@ const Forms = () => {
         },
       };
       worksheet["!merges"].push(...defaultMerges, ...temp);
-
       // Xuất file Excel
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
