@@ -174,7 +174,12 @@ const Forms = () => {
                 e.stopPropagation();
                 handleEdit(activity);
               }}
-              className="cursor-pointer text-blue-500 font-medium text-start"
+              className={`cursor-pointer font-medium text-start ${
+                activity.determinations.file.path === "" ||
+                activity.determinations.file.path === undefined
+                  ? "text-orange-500"
+                  : "text-blue-500"
+              }`}
             >
               {activity.name}
             </p>
@@ -228,7 +233,9 @@ const Forms = () => {
                 </Link>
               </>
             ) : (
-              <></>
+              <>
+                <Icon name="bx-x" size="20px" className="text-orange-500" />
+              </>
             )}
           </>
         );
@@ -680,7 +687,13 @@ const Forms = () => {
       const blob = new Blob([excelBuffer], {
         type: "application/octet-stream",
       });
-      saveAs(blob, "data.xlsx");
+      const now = new Date();
+      const formattedDate = `${String(now.getDate()).padStart(2, "0")}-${String(
+        now.getMonth() + 1
+      ).padStart(2, "0")}-${now.getFullYear()}-${String(
+        now.getHours()
+      ).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}`;
+      saveAs(blob, "BM05-" + formattedDate + ".xlsx");
     }
   }, []);
 

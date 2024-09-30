@@ -404,7 +404,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
       documentNumber: documentNumber,
       description: moTa,
     };
-    // console.log("FORM DATA", formData);
+    console.log("FORM DATA", formData);
     onSubmit(formData);
   };
 
