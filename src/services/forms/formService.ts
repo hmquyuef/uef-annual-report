@@ -52,6 +52,7 @@ export interface ActivityInput{
     id: string;
     userName: string;
     fullName: string;
+    unitId: string;
     unitName: string;
     standardNumber: number;
 }

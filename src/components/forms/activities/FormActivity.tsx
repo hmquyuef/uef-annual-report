@@ -99,7 +99,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
     UnitsHRMResponse | undefined
   >(undefined);
   const [tableUsers, setTableUsers] = useState<ActivityInput[]>([]);
-  const [inputSearch, setInputSearch] = useState<string>("");
+  // const [inputSearch, setInputSearch] = useState<string>("");
   const [selectedKey, setSelectedKey] = useState<Key | null>(null);
   const [standardValues, setStandardValues] = useState<number | 0>(0);
   const [listPicture, setListPicture] = useState<FileItem[]>([]);
@@ -141,6 +141,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
           id: itemUser.id,
           userName: itemUser.userName,
           fullName: itemUser.fullName,
+          unitId: itemUser.unitId,
           unitName: itemUser.unitName,
           standardNumber: standard,
         };
@@ -220,25 +221,25 @@ const FormActivity: React.FC<FormActivityProps> = ({
     setSelectedKey(key);
   };
 
-  const onInputChange = (value: string) => {
-    setInputSearch(value.trim().toUpperCase());
-  };
-
   // Gọi API mỗi khi query thay đổi
-
   useEffect(() => {
-    try {
-      const filtered = filteredUsersFromHRMTemp?.items?.filter(
-        (user: UsersFromHRM) =>
-          user.userName.toUpperCase().includes(inputSearch) ||
-          user.fullName.toUpperCase().includes(inputSearch) ||
-          user.fullNameUnsigned.toUpperCase().includes(inputSearch)
-      );
-      setFilteredUsersFromHRM(filtered ?? []);
-    } catch (error) {
-      setFilteredUsersFromHRM([]);
-    }
-  }, [inputSearch, filteredUsersFromHRMTemp]);
+    const filterUsers = () => {
+      try {
+        const inputSearch = "";
+        const filtered = filteredUsersFromHRMTemp?.items?.filter(
+          (user: UsersFromHRM) =>
+            user.userName.toUpperCase().includes(inputSearch) ||
+            user.fullName.toUpperCase().includes(inputSearch) ||
+            user.fullNameUnsigned.toUpperCase().includes(inputSearch)
+        );
+        setFilteredUsersFromHRM(filtered ?? []);
+      } catch (error) {
+        setFilteredUsersFromHRM([]);
+      }
+    };
+
+    filterUsers();
+  }, [filteredUsersFromHRMTemp]);
 
   // Populate form data in edit mode
   useEffect(() => {
@@ -396,6 +397,7 @@ const FormActivity: React.FC<FormActivityProps> = ({
         id: user.id,
         userName: user.userName,
         fullName: user.fullName,
+        unitId: user.unitId,
         unitName: user.unitName,
         standardNumber: user.standardNumber,
       })),
@@ -530,7 +532,6 @@ const FormActivity: React.FC<FormActivityProps> = ({
               variant="faded"
               placeholder=" "
               onSelectionChange={onSelectionChange}
-              onInputChange={onInputChange}
               startContent={<Icon name="bx-search-alt-2" size="20px" />}
               listboxProps={{
                 emptyContent: "Vui lòng nhập mã nhân viên phù hợp!",

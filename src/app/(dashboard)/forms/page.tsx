@@ -35,13 +35,13 @@ import {
   TableCell,
   TableColumn,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@nextui-org/react";
 
 import { getDataExportById } from "@/services/exports/exportService";
 import { saveAs } from "file-saver";
 import { Key, useCallback, useEffect, useMemo, useState } from "react";
-import * as XLSX from "xlsx";
+import * as XLSX from "sheetjs-style";
 
 const Forms = () => {
   type Activities = (typeof activities)[0];
@@ -361,93 +361,327 @@ const Forms = () => {
     const results = await getDataExportById(
       "b46ee628-bfe3-4d27-a10b-9d0c47145613"
     );
-    const defaultInfo = [
-      ["", "", "", "", "", "", "", "", "BM-05"],
-      [
-        "TRƯỜNG ĐẠI HỌC KINH TẾ - TÀI CHÍNH",
-        "",
-        "",
-        "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
-      ],
-      ["THÀNH PHỐ HỒ CHÍ MÌNH", "", "", "Độc lập - Tự do - Hạnh phúc"],
-      [`${results.unitName}`],
-      ["TỔNG HỢP DANH SÁCH"],
-      [
-        "Tham gia Ban tổ chức các hoạt động báo cáo chuyên đề, Hội thảo khoa học; Các cuộc thi học thuật; Hướng dẫn/hỗ trợ sinh viên tham gia các cuộc thi, … được BĐH phê duyệt tiết chuẩn",
-      ],
-      [""], // Dòng 9 để trống
-    ];
+    if (results) {
+      const defaultInfo = [
+        ["", "", "", "", "", "", "", "", "", "", "", "", "BM-05"],
+        [
+          "TRƯỜNG ĐẠI HỌC KINH TẾ - TÀI CHÍNH",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+        ],
+        [
+          "THÀNH PHỐ HỒ CHÍ MINH",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "Độc lập - Tự do - Hạnh phúc",
+        ],
+        ["(ĐƠN VỊ)", "", "", ""],
+        ["TỔNG HỢP DANH SÁCH"],
+        [
+          "Tham gia Ban tổ chức các hoạt động báo cáo chuyên đề, Hội thảo khoa học; Các cuộc thi học thuật; Hướng dẫn/hỗ trợ sinh viên tham gia các cuộc thi, … được BĐH phê duyệt tiết chuẩn",
+        ],
+        [""], // Dòng 9 để trống
+      ];
 
-    const dataArray = [
-      [
-        "STT",
-        "Mã số CBGVNV",
-        "Họ và chữ lót",
-        "Tên",
-        "Đơn vị",
-        "Tên hoạt động đã thực hiện",
-        "Số tiết chuẩn được BGH phê duyệt",
-        "Minh chứng",
-        "Ghi chú",
-      ], // Tên cột ở dòng 10
-      ...results.data.map((item) => [
-        item.stt,
-        item.userName,
-        item.middleName,
-        item.firstName,
-        item.faculityName,
-        item.activityName,
-        item.standNumber,
-        item.determination,
-        item.note,
-      ]),
-    ];
-    const combinedData = [...defaultInfo, ...dataArray];
-    const worksheet = XLSX.utils.aoa_to_sheet(combinedData);
-    //thêm định dạng cho các ô
-    const boldCenterStyle = {
-      font: { bold: true },
-      alignment: { horizontal: "center", vertical: "center" },
-    };
+      const defaultFooterInfo = [
+        ["Ghi chú:"],
+        [
+          "- Mã số CB-GV-NV yêu cầu cung cấp phải chính xác. Đơn vị có thể tra cứu Mã CB-GV-NV trên trang Portal UEF.",
+        ],
+        ["- Biểu mẫu này dành cho các khoa, viện, Phòng Đào tạo."],
+        [
+          "- Photo Tờ trình, Kế hoạch đã được BĐH phê duyệt tiết chuẩn nộp về VPT. Các trường hợp không được phê duyệt hoặc đã thanh toán thù lao thì không đưa vào biểu mẫu này.",
+        ],
+        [
+          "- Mỗi cá nhân có thể có nhiều dòng dữ liệu tương ứng với các hoạt động đã thực hiện... được BĐH phê duyệt tiết chuẩn.",
+        ],
+        [
+          "- Việc quy đổi tiết chuẩn căn cứ theo Phụ lục III, Quyết định số 720/QĐ-UEF ngày 01 tháng 9 năm 2023.								",
+        ],
+        [""],
+        ["", "LÃNH ĐẠO ĐƠN VỊ", "", "", "", "", "", "", "", "NGƯỜI LẬP"],
+      ];
 
-    const range = XLSX.utils.decode_range(worksheet["!ref"]!);
-    // Áp dụng border cho tất cả các ô còn lại (có thể thêm các định dạng khác nếu muốn)
-    for (let row = 7; row <= range.e.r; row++) {
-      for (let col = 0; col <= range.e.c; col++) {
-        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-        if (worksheet[cellRef]) worksheet[cellRef].s = boldCenterStyle;
+      const dataArray = [
+        [
+          "STT",
+          "Mã số CBGVNV",
+          "Họ và chữ lót",
+          "Tên",
+          "Đơn vị",
+          "Tên hoạt động đã thực hiện",
+          "",
+          "",
+          "",
+          "Số tiết chuẩn được BGH phê duyệt",
+          "Minh chứng",
+          "",
+          "Ghi chú",
+        ], // Tên cột ở dòng 10
+        ...results.data.map((item, index) => [
+          index + 1,
+          item.userName,
+          item.middleName,
+          item.firstName,
+          item.faculityName,
+          item.activityName,
+          "",
+          "",
+          "",
+          item.standNumber,
+          item.determination,
+          "",
+          item.note,
+        ]),
+      ];
+
+      const combinedData = [...defaultInfo, ...dataArray];
+      const combinedFooterData = [...combinedData, ...defaultFooterInfo];
+      const worksheet = XLSX.utils.aoa_to_sheet(combinedFooterData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      // Thiết lập chiều cao của hàng 6 (ô đã merge) thành 40 pixel
+      worksheet["!rows"] = [];
+      worksheet["!rows"][5] = { hpx: 40 }; // Chiều cao hàng thứ 6 là 40 pixel
+      worksheet["!cols"] = [];
+      worksheet["!cols"][0] = { wch: 4 };
+      worksheet["!cols"][1] = { wch: 18 };
+      worksheet["!cols"][2] = { wch: 20 };
+      worksheet["M1"].s = {
+        fill: {
+          fgColor: { rgb: "FFFF00" },
+        },
+        font: {
+          name: "Times New Roman",
+          sz: 11,
+        },
+        alignment: {
+          wrapText: true,
+          vertical: "center",
+          horizontal: "center",
+        },
+        border: {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+          bottom: { style: "thin" },
+        },
+      };
+      worksheet["A2"].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 11,
+        },
+        alignment: {
+          wrapText: true,
+          vertical: "center",
+          horizontal: "center",
+        },
+      };
+      worksheet["G2"].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 11,
+          bold: true,
+        },
+        alignment: {
+          wrapText: true,
+          vertical: "center",
+          horizontal: "center",
+        },
+      };
+      worksheet["A3"].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 11,
+        },
+        alignment: {
+          wrapText: true,
+          vertical: "center",
+          horizontal: "center",
+        },
+      };
+      worksheet["G3"].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 11,
+          bold: true,
+        },
+        alignment: {
+          wrapText: true,
+          vertical: "center",
+          horizontal: "center",
+        },
+      };
+      worksheet["A4"].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 11,
+          bold: true,
+        },
+        alignment: {
+          wrapText: true,
+          vertical: "center",
+          horizontal: "center",
+        },
+      };
+      worksheet["A5"].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 15,
+          bold: true,
+        },
+        alignment: {
+          wrapText: true,
+          vertical: "center",
+          horizontal: "center",
+        },
+      };
+      worksheet["A6"].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 13,
+          bold: true,
+        },
+        alignment: {
+          wrapText: true,
+          vertical: "center",
+          horizontal: "center",
+        },
+      };
+      // Merge các ô từ A6 đến M6
+      worksheet["!merges"] = [];
+      const temp = [];
+      const range = XLSX.utils.decode_range(worksheet["!ref"]!);
+      for (let row = 7; row <= results.data.length + 7; row++) {
+        temp.push(
+          { s: { r: row, c: 5 }, e: { r: row, c: 8 } },
+          { s: { r: row, c: 10 }, e: { r: row, c: 11 } }
+        );
+        worksheet["!rows"][row + 1] = { hpx: 45 };
+        for (let col = range.s.c; col <= range.e.c; col++) {
+          const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+          if (worksheet[cellRef]) {
+            worksheet[cellRef].s = {
+              font: {
+                name: "Times New Roman",
+                sz: 11,
+                bold: row === 7 ? true : false,
+              },
+              alignment: {
+                wrapText: true,
+                vertical: "center",
+                horizontal:
+                  row > 7 &&
+                  (col === 1 ||
+                    col === 2 ||
+                    col === 3 ||
+                    col === 5 ||
+                    col === 5)
+                    ? "left"
+                    : "center",
+              },
+              border: {
+                top: { style: "thin" },
+                left: { style: "thin" },
+                right: { style: "thin" },
+                bottom: { style: "thin" },
+              },
+            };
+          }
+        }
       }
-    }
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-    // Thiết lập cấu hình trang
-    if (!worksheet["!margins"]) {
-      worksheet["!margins"] = {
-        left: 0.5,
-        right: 0.5,
-        top: 0.5,
-        bottom: 0.5,
-        header: 0.3,
-        footer: 0.3,
+      const defaultMerges = [
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
+        { s: { r: 1, c: 6 }, e: { r: 1, c: 12 } },
+        { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } },
+        { s: { r: 2, c: 6 }, e: { r: 2, c: 12 } },
+        { s: { r: 3, c: 0 }, e: { r: 3, c: 3 } },
+        { s: { r: 4, c: 0 }, e: { r: 4, c: 12 } },
+        { s: { r: 5, c: 0 }, e: { r: 5, c: 12 } },
+        {
+          s: { r: results.data.length + 15, c: 1 },
+          e: { r: results.data.length + 15, c: 2 },
+        },
+        {
+          s: { r: results.data.length + 15, c: 9 },
+          e: { r: results.data.length + 15, c: 10 },
+        },
+      ];
+      for (
+        let row = results.data.length + 8;
+        row < results.data.length + 14;
+        row++
+      ) {
+        const cellRef = XLSX.utils.encode_cell({ r: row, c: 0 });
+        if (worksheet[cellRef]) {
+          worksheet[cellRef].s = {
+            font: {
+              name: "Times New Roman",
+              sz: 11,
+            },
+          };
+        }
+      }
+      const cellNote = XLSX.utils.encode_cell({
+        r: results.data.length + 9,
+        c: 0,
+      });
+      const cellHeadUnit = XLSX.utils.encode_cell({
+        r: results.data.length + 15,
+        c: 1,
+      });
+      const cellPersionCreate = XLSX.utils.encode_cell({
+        r: results.data.length + 15,
+        c: 9,
+      });
+      worksheet[`${cellNote}`].s = {
+        font: {
+          bold: true,
+        },
       };
-    }
-    // Thiết lập khổ giấy A4 và in nhiều trang
-    if (!worksheet["!pageSetup"]) {
-      worksheet["!pageSetup"] = {
-        paperSize: 9, // Khổ A4
-        orientation: "portrait", // Hướng giấy dọc
-        fitToWidth: 1, // Đảm bảo vừa chiều ngang
-        fitToHeight: 0, // Cho phép in nhiều trang nếu không vừa chiều dọc
+      worksheet[`${cellHeadUnit}`].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 11,
+          bold: true,
+        },
+        alignment: {
+          vertical: "center",
+          horizontal: "center",
+        },
       };
+      worksheet[`${cellPersionCreate}`].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 11,
+          bold: true,
+        },
+        alignment: {
+          vertical: "center",
+          horizontal: "center",
+        },
+      };
+      worksheet["!merges"].push(...defaultMerges, ...temp);
+
+      // Xuất file Excel
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
+      const blob = new Blob([excelBuffer], {
+        type: "application/octet-stream",
+      });
+      saveAs(blob, "data.xlsx");
     }
-    // Xuất file Excel
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
-    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(blob, "data.xlsx");
   }, []);
 
   const topContent = useMemo(() => {
